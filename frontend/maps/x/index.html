@@ -1,0 +1,158 @@
+
+<script src="../lib/jquery/jquery.js" asp-append-version="true"></script>
+<script src="../lib/vue/vue.js"></script>
+
+
+<!-- TESTING -->
+<script src="./../testing/testing_symbol_msft.js"></script>
+<script src="./../testing/testing_symbol_amd.js"></script>
+<script src="./../testing/testing_symbols_all.js"></script>
+
+<script src="./../testing/testing_shifts_sample_01.js"></script>
+<script src="./../testing/testing_shifts_sample_02.js"></script>
+<script src="./../testing/testing_shifts_completed_sample_01.js"></script>
+
+<script src="./../testing/testing_orders_sample_01.js"></script>
+<script src="./../testing/testing_orders_sample_02.js"></script>
+
+<script src="./../testing/testing_triggers_sample_01.js"></script>
+<script src="./../testing/testing_triggers_sample_02.js"></script>
+
+<script src="./../testing/testing_positions_sample_01.js"></script>
+<script src="./../testing/testing_positions_sample_02.js"></script>
+
+<script src="./../testing/testing_options_sample_01.js"></script>
+<script src="./../testing/testing_options_sample_02.js"></script>
+
+<script src="./../testing/testing_balance_sample_01.js"></script>
+<script src="./../testing/testing_balance_sample_02.js"></script>
+
+<script src="./../testing/testing_transact_buy_sample_01.js"></script>
+<script src="./../testing/testing_transact_sell_sample_01.js"></script>
+
+<script src="./../testing/testing_alerts_sample_01.js"></script>
+<script src="./../testing/testing_alerts_sample_02.js"></script>
+
+<script src="./../testing/testing_shifts_sample_01.js"></script>
+<script src="./../testing/testing_shifts_sample_02.js"></script>
+
+<link rel="stylesheet" href="./../lib/bootstrap/css/bootstrap.css" />
+<link rel="stylesheet" href="./css/mobile.css"/>
+
+<script type="module" src="./../index.js"></script>
+
+<style>
+    .mobile-frame{
+        width: 393px;
+        height: 851px
+    }
+</style>
+
+<div id="adminApp">
+<table>
+    <tr>
+        <td>
+            <iframe src="./../help" id="helpFrame" class="mobile-frame"></iframe>
+            <div><a href="./../help">Help</a></div>
+        </td>
+        <td>
+            <iframe id="menuFrame" src="./../menu?page=page" class="mobile-frame"></iframe>
+            <div><a href="./../menu?page=page">Menu</a></div>
+        </td>
+        <td>
+            <iframe id="alertsFrame" src="./../alerts" class="mobile-frame"></iframe>
+            <div><a href="./../alerts">Alerts</a></div>
+        </td>
+        <td rowspan="10" style="vertical-align: top; position: fixed;">
+            <div>
+                IsConnected: <input type="checkbox" v-model="appStatus.isConnected">
+
+                <div v-for="frame in frames">
+                    <div class="section-title">{{frame.id}}</div>
+                    <div v-for="useCase in frame.cases">
+                        <div @mouseenter="setDummyDataForWindow(frame, useCase)">
+                            <div>{{useCase.name}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <iframe src="./../help" id="helpFrame" class="mobile-frame"></iframe>
+            <div><a href="./../help">Help</a></div>
+        </td>
+        <td>
+            <iframe src="./../symbol" id="symbolFrame" class="mobile-frame"></iframe>
+            <div><a href="./../symbol">Symbol</a></div>
+        </td>
+        <td>
+            <iframe src="./../options" id="optionsFrame" class="mobile-frame"></iframe>
+            <div><a href="./../options">Options</a></div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <iframe src="./../shifts"id="shiftsFrame"  class="mobile-frame"></iframe>
+            <div><a href="./../shifts">Shifts</a></div>
+        </td>
+        <td>
+            <iframe src="./../triggers"id="triggersFrame"  class="mobile-frame"></iframe>
+            <div><a href="./../triggers">Triggers</a></div>
+        </td>
+        <td>
+            <iframe src="./../balance" id="balanceFrame" class="mobile-frame"></iframe>
+            <div><a href="./../balance">Balance</a></div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <iframe src="./../transact" id="transactFrame" class="mobile-frame"></iframe>
+            <div><a :href="'../transact?userId='+user.userId+'&token='+user.token+'&jwt='+user.jwt+'&symbolId='+symbol.price+'&code='+symbol.code+'&price='+symbol.price">Symbol Order</a></div>
+        </td>
+        <td>
+            <iframe src="./../orders" id="ordersFrame" class="mobile-frame"></iframe>
+            <div><a href="./../orders">Orders List</a></div>
+        </td>
+        <td>
+            <iframe src="./../positions" id="positionsFrame" class="mobile-frame"></iframe>
+            <div><a href="./../positions">Positions list</a></div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <iframe src="./../voting?page=page" id="votingFrame" class="mobile-frame"></iframe>
+            <div><a href="./../voting?page=page">Votind App</a></div>
+        </td>
+        <td>
+            <iframe src="./../voting?page=list" id="votingFrame" class="mobile-frame"></iframe>
+            <div><a href="./../voting?page=list">Voting List</a></div>
+        </td>
+        <td>
+            <iframe src="./../voting?page=create" id="votingFrame" class="mobile-frame"></iframe>
+            <div><a href="./../voting?page=create">Voting Create</a></div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <iframe src="./../micro-triggers" id="microTrigersFrame" class="mobile-frame"></iframe>
+            <div><a href="./../micro-triggers">Micro-Triggers</a></div>
+        </td>
+    </tr>
+</table>
+</div>
+
+
+<script>
+    // SET BACKGROUND
+    document.urlParams = new URLSearchParams(window.location.search);
+    var env = document.urlParams.get('env');
+    if(env) {
+        setBackground(env);
+    }
+</script>
+<script type = "module">
+    
+    
+</script>

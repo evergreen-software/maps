@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>StockTech.org</title>
+
+    <meta property="og:title" content="StockTech.org">
+    <meta property="og:image" content="https://stocktech.org/img/my.gif">
+    <meta property="og:type" content="article" />
+    <meta property="fb:app_id" content="1641916685886296" />
+    <meta property="og:description" content="Multiple stock price charts." />
+    <meta property="og:url" content="https://stocktech.org/">
+
+    <link rel="stylesheet" href="./../lib/data-tables/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="../css/mobile.table.css"/>
+    <link rel="stylesheet" href="./../lib/bootstrap/css/bootstrap-icons.css">
+    <link rel="stylesheet" href="../css/mobile.css" />
+
+
+
+    <meta name="format-detection" content="telephone=no" />
+    <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, target-densitydpi=device-dpi" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script src="../services/vanilla.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js" asp-append-version="true"></script>
+    <script src="jquery.sparkline.min.js" asp-append-version="true"></script>
+    <script src="./../lib/vue/vue.js"></script>
+    <script src="../symbols.js"></script>
+    <link rel="stylesheet" href="./../lib/bootstrap/css/bootstrap.css" />
+
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM_Placeholder');</script>
+    <!-- End Google Tag Manager -->
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AnalyticsTagPlaceholder"></script>
+    <script src="./../lib/moment/moment.min.js"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'AnalyticsTagPlaceholder');
+    </script>
+
+    <script src="./../lib/lightweight-charts/lightweight-charts.standalone.production.js" asp-append-version="true"></script>
+
+    <style>
+        [v-cloak] { display:none; }
+        
+        .bottom-panel{
+            position: fixed;
+            bottom: 0px;
+            padding: 10px;
+            background-color: white;
+            margin-top: 5px;
+            width: 300px;
+        }
+        
+        .size_12{
+            width: 12px;
+            height: 12px;
+        }
+        #progress-bar {
+            width: 100%;
+            height: 30px;
+            background-color: #ccc;
+        }
+        .progress-bar-votes {
+            margin: 3px;
+            width: 100%;
+            height: 30px;
+            border: 1px solid #ccc;
+        }
+
+        #progress {
+            width: 0%;
+            height: 100%;
+            background-color: green;
+            transition: width 1s linear;
+        }
+
+        .progress-yellow {
+            background-color: yellow;
+            color: blue;
+        }
+
+        .progress-green {
+            background-color: darkblue;
+            color: white;
+        }
+
+        .progress-votes {
+            width: 0%;
+            height: 100%;
+            /* background-color: darkgreen; */
+            transition: width 1s linear;
+        }
+
+        .blink {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .full-width{
+            width: 100%;
+        }
+        .voting-selection{
+            border: 1px solid gray;
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .section-title{
+            font-weight: bold;
+            font-size: x-large;
+        }
+
+        td, th{
+            text-align: right;
+        }
+    </style>
+</head>
+<!-- Page content -->
+
+<div id="adminApp">
+    <div class="container" :style="'background-color: ' + backgroundColor">
+        <!-- Voting Help Page START -->
+        <div class="row" v-if="!user">
+            <div class="col-12" style="min-width: 300px; text-align: center">
+                <h1>Connecting... <img class="size_40" src="../../img/loading.svg" alt="loading"/></h1>
+            </div>
+        </div>
+
+        <div class="row" v-if="user" v-cloak>
+            <div class="col-12" style="min-width: 300px; text-align: center">
+                <otb-menu-component ref="appMenu"></otb-menu-component>
+            </div>
+        </div>
+
+        <div class="row" v-if="!selectedAlert">
+            <div class="col-12" style="min-width: 300px; text-align: center">
+                <h1>Alerts {{ (env != "Prod" ? "("+env+")":"") }}</h1>
+            </div>
+        </div>
+        
+        <!-- {{performanceMessages}} -->
+
+        <div class="row" v-cloak v-if="orderId && !selectedAlert">
+            <a :href="hrefBack" class="btn col-12 alert-danger" style="min-width: 300px; text-align: center">
+                Alert {{ alertId }} not found in recent alerts.
+            </a>
+        </div>
+
+        <div class="row" v-cloak v-if="user && alerts.length">
+
+            <div class="col-12" v-cloak v-if="selectedAlert" style="min-width: 300px; text-align: center">
+
+                <div class="row" >
+                    <div class="col-12" style="min-width: 300px; text-align: center">
+                        <h1>
+                            <a v-if="symbol" class="text-primary full-width" :href="href">
+                                {{ selectedAlert.code }}
+                            </a>
+                            {{ (env != "Prod" ? "("+env+")":"") }}
+                        </h1>
+                        <div v-if="!balanceExists"></div>
+                        <div v-else>
+                        </div>
+                        <div>Price: {{ selectedAlert.price }}</div>
+                    </div>
+                </div>
+
+                <br>
+                <div>Alert {{selectedAlert.alertId}} for {{selectedAlert.code}}</div>
+                <br>
+                <hr>
+
+                <div class="btn btn-primary full-width" v-on:click="selectAlert(null)">Show all alerts</div>
+                <br>
+                <br>
+                <b class="float-left">Alert Info</b>
+                <table style="border: 1px solid gray" class='mobileTable' style="text-align: right">
+                    <tr>
+                        <td>Code</td>
+                        <th> {{selectedAlert.code}} </th>
+                    </tr>
+                    <tr>
+                        <td>AlertId</td>
+                        <th> {{selectedAlert.alertId}} </th>
+                    </tr>
+                    <tr>
+                        <td>BalanceId</td>
+                        <th> <a :href="goToBalanceLink"> {{selectedAlert.balanceId}} </a> </th>
+                    </tr>
+                </table>
+                <div v-if="selectedAlert.buyCompletedTime">
+                    <br>
+                    <b class="float-left">Completed Info</b>
+                    <table style="border: 1px solid gray" class='mobileTable' style="text-align: right">
+                        <tr>
+                            <td>Volume</td>
+                            <th> {{selectedAlert.buyCompletedVolume}} </th>
+                        </tr>
+                        <tr>
+                            <td>Value</td>
+                            <th> {{selectedAlert.buyCompletedValue}} </th>
+                        </tr>
+                        <tr>
+                            <td>Time</td>
+                            <th> {{ timeService.timeAgo_otb_fn(selectedAlert.buyCompletedTime) }} ago </th>
+                        </tr>
+                    </table>
+                </div>
+                <br>
+                <b class="float-left">Other Info</b>
+                <table style="border: 1px solid gray" class='mobileTable' style="text-align: right">
+                    <tr>
+                        <td>AOID</td>
+                        <th> {{selectedAlert.alpacaAlertId}} </th>
+                    </tr>
+                    <tr>
+                        <td>Created</td>
+                        <th> {{ timeService.timeAgo_otb_fn(selectedAlert.created) }} ago </th>
+                    </tr>
+                </table>
+
+                <br>
+                <hr>
+                <div class="row" v-if="user && symbol">
+                    <div class="col-6">
+                        <a class="btn btn-primary full-width" :href="'../orders?env='+env+'&userId='+user.userId+'&token='+user.token+'&jwt='+user.jwt+'&symbolId='+symbol.symbolId+'&code='+symbol.code+'&price='+symbol.price"> Orders </a>
+                    </div>
+                    <div class="col-6">
+                        <a v-if="symbol" class="btn btn-primary full-width" :href="'../transact?side=2&env='+env+'&userId='+user.userId+'&token='+user.token+'&jwt='+user.jwt+'&symbolId='+symbol.symbolId+'&code='+symbol.code+'&price='+symbol.price"> Try to sell... </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12" v-if="!selectedAlert" style="min-width: 300px; text-align: center">
+                <br>
+
+
+                <div class="container-fluid body-content flex-grow" style="width: 100%">
+
+                    <div v-if="symbolsLeft > 0">
+                        <!--Loading {{symbolsLeft}} of {{symbols.length}} <img class="size_12" src="../../img/loading.svg" alt="loading"/></span-->
+                        Loading {{symbolsLeft}} <img class="size_12" src="../../img/loading.svg" alt="loading"/></span>
+                        <br>
+                    </div>
+                    <div class="row">
+                        
+                        
+                        <template v-for="(symbol, index) in symbols">
+                            <table style="border: 1px solid gray; width: 300px; min-width: 300px; max-width: 300px" class="" v-show="isVisible(symbol, searchText)">
+                                <tr >
+                                    <td style="text-align: left">
+                                        <div>
+                                            <span style='color: green; font-weight: bold;' :title="symbol.symbolId" v-on:click="openLink_otb_fn(symbol)">{{ symbol.code }}</span>
+                                            <span class="text-danger small" v-if="symbol.data.length">{{ timeService.timeAgo_otb_fn(symbol.data[symbol.data.length-1][0]) }} ago</span>
+                                            <span v-if="!symbol.loaded">... <img class="size_12" src="../../img/loading.svg" alt="loading"/></span>
+                                        </div>
+                                        <div>
+                                            <span v-if="symbol.ticks"> 
+                                                <div>
+                                                    <span>{{computePercent_otb_fn(symbol.ticks)}}</span>% in <span class="text-secondary">{{computeDuration_otb_fn(symbol.ticks, symbol.symbolId)}}</span>
+                                                </div>  
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style="height:50px; width:150px">
+                                            <span :id="'ch_'+symbol.symbolId+'_1'" > Real Time Price </span>
+                                        </div>
+                                    </td>
+            
+                                </tr>
+                                <tr >    
+                                    <td colspan="4">
+                                        <div>
+                                            <span> <span title="Lats month update" :id="'lum_'+symbol.symbolId" style="color: blue"> </span></span>
+                                            <span> <span title="Lats year update" :id="'luy_'+symbol.symbolId" style="color: green"> </span></span>
+                                        </div>
+                                    </td>
+            
+                                </tr>
+                            </table>
+
+                        </template>
+                    </div>
+                    <br>
+                    
+                    <div class="bottom-panel">
+                        Filter
+                        <input v-model="searchText"/>
+                    </div>
+                </div>
+                    <div class="h2" v-if="priceFrame">
+                        <span class="text-black"> sellPercent: {{ status.sellPercent }}  </span>
+                        -
+                        Current price: {{priceFrame[0][2]}}
+                        -
+                        <span class="text-black"> buyPercent: {{ status.buyPercent }} </span>
+                    </div>
+
+                    <br>
+                </div>
+                
+            </div>
+        </div>
+
+        <div class="row" v-if="user" v-cloak>
+            <div class="col-12" style="min-width: 300px; text-align: center">
+                <div v-if="loadingOrders">
+                    Loading... <img class="size_40" src="../../img/loading.svg" alt="loading"/>
+                </div>
+                <div v-if="!loadingOrders && !alerts.length">
+                    <b>No alerts found</b>
+                </div>
+            </div>
+        </div>
+
+        <br>
+        <br>
+        <div v-if="false" v-cloak v-on:click="isDebug = !isDebug">Debug
+            <div v-if="isDebug">
+                <div>{{env}}</div>
+                <div v-on:click="getAlerts_otb_fn()">{{backgroundColor}}</div>
+                <div>{{url}}</div>
+                <div v-for="message in debugMessages">{{message}}</div>
+            </div>
+            <div class="btn" onclick="setUser_otb_fn({ userId: 1, token: 'Flo' }, 'Dev')">Set User</div>
+        </div>
+    ======= {{chartsToDraw.length}}
+    <div v-for="(ch, index) in chartsToDraw">
+        [{{index}}] {{ch.symbolId}} {{ch}}
+    </div>
+</div>
+
+<script>
+    window.symbolIdsDictionary = {};
+    Object.getOwnPropertyNames(symbolsDictionary).map(p => { return window.symbolIdsDictionary[symbolsDictionary[p]] = p} );
+    
+    var isLocalhost = window.location.host.indexOf("localhost") >= 0;
+    var windowEnv = null;
+    var windowUser = null;
+    var windowSymbol = false && isLocalhost ? {symbolId: 1, code: "CCL"} : null;
+    function setUser(user, env){
+        window.windowUser = user;
+        window.windowEnv = env;
+        return "{ userId: " + window.windowUser.userId+" }";
+    }
+    function setSymbol(symbol){
+        window.windowSymbol = symbol;
+        return "{ symbolId: " + window.windowSymbol.symbolId+" }";
+    }
+
+    $(document).ready(function() {
+        if(isLocalhost) {
+            // setSymbol({symbolId: 10, code: "CCL", price: 10.5});
+        }
+    });
+</script>
+
+<script type = "module">
+    
+    import {priceService} from "../services/priceService.js";
+    import {userService} from "../services/userService.js";
+    import {libService} from "../services/libService.js";
+    import {timeService} from "../services/timeService.js";
+    import * as OtbMenuComponent from "../components/menu.component.js";
+
+    document.vue = new Vue({
+        el: "#adminApp",
+        props: [],
+        data() {
+            return {
+                libService:libService,
+                timeService:timeService,
+
+                // Debug
+                showDebugMessages: false,
+                isDebug: false,
+                debugMessages: [],
+                searchText: null,
+                
+                // Alerts
+                symbols:[],
+                priceFrame: null,
+                symbolsLeft: 0,
+                alertsPriceHistory:[],
+                waitingForUI: true,
+                chartsToDraw:[],
+                performanceMessages: [],
+
+                // Navigation
+                orderId: null,
+                alertId: null,
+                balanceId: null,
+                backTo: null,
+                goToBalanceLink: null,
+                hrefBack: null,
+                href: null,
+                url: null,
+                i:0,
+                //
+                symbolIdsDictionary: [],
+                backgroundColor: "rgb(255, 255, 255)",
+                info1: true,
+                orderStatusLookupItems: [
+                    //{ id: 0, name: 
+                            "undefined",
+                    //{ id: 1, name: 
+                            "New",
+                    //{ id: 2, name: 
+                            "Accepted",
+                    //{ id: 3, name: 
+                            "Filled",
+                    //{ id: 4, name: 
+                            "Canceled" ,
+                    //{ id: 5, name: 
+                            "Rejected" ,
+                    //{ id: 6, name: 
+                            "Missing" ,
+                    //{ id: 7, name: 
+                            "InsufficientBalance"
+                ],
+                // Common
+                env: 'Prod',
+                user: null,
+                symbol: null,
+                progressBar_intervalHandler: null,
+                timeAgoHandler: null,
+                isLocalhost: window.location.host.indexOf("localhost") >= 0,
+                // Balance
+                balanceExists: false,
+                lastEquityValue: 0,
+                cash: 0,
+                lastPercentValue: 0,
+                balanceHistory: [],
+                balanceHistorySeries: null,
+                balanceChart: null,
+                // Progress
+                progressBar_secods: 60,
+                progressBar_timeOut: 60,
+                progressBar_percent: 100,
+                progressBar_blinkCount: 0,
+                myVote: null,
+
+                // Orders
+                orders: [],
+                selectedAlert: null,
+                loadingOrders: true,
+                // Navigation
+                page: 'voting-help',
+                lastPage: null,
+                replaceAt: 0,
+
+                alertStateLookupItems: [
+                    { id: 0, name: "Any", info: "All statuses" } ,
+                    { id: 1, name: "Waiting", info: "Generated by an instrument" } ,
+                    { id: 2, name: "Created", info: "Created by hand or triggered by algorithm" } ,
+                    { id: 3, name: "BuySuggested", info: "Waiting for user confirmation" } ,
+                    { id: 4, name: "BuyAccepted", info: "Order was accepted" } ,
+                    { id: 5, name: "BuyCompleted", info: "Waiting for user confirmation" } ,
+                    { id: 6, name: "BuyRejected", info: "User accepted" } ,
+                    { id: 7, name: "Expired", info: "Waiting expired, default action taken (e.g. Execute, Wait again or cancel)" } ,
+                    { id: 8, name: "Retracted", info: "Evaluaued to be retracted by the system as no more relevant" } ,
+                    { id: 9, name: "SellSuggested", info: "Once executed, the user will later decide to sell" } ,
+                    { id: 10, name: "SellAccepted", info: "Once executed, the user will later decide to sell" } ,
+                    { id: 11, name: "SellCompleted", info: "Once executed, the user will later decide to sell" } ,
+                    { id: 12, name: "SellRejected", info: "Once executed, the user will later decide to sell" } ,
+                    { id: 13, name: "SoldByUser", info: "Alert closed by user" } ,
+                    { id: 14, name: "SoldBySystem", info: "Alert closed by algorithms" },
+                    { id: 15, name: "Disabled", info: "Stop monitoring" } ,
+                    { id: 16, name: "Deleted", info: "Stop monitoring and hide" } ,
+                    { id: 17, name: "ResetRequested", info: "Request the server to clear it's view" } ,
+                    { id: 18, name: "BuyTransmitted", info: "BuyTransmitted" } ,
+                    { id: 19, name: "BuyCreated", info: "BuyCreated" } ,
+                    { id: 20, name: "SellTransmitted", info: "SellTransmitted" } ,
+                    { id: 21, name: "SellCreated", info: "SellCreated" } ,
+                    { id: 22, name: "Tolerance", info: "???" } ,
+                    { id: 23, name: "LowAnchor", info: "???" } ,
+                    { id: 24, name: "CancelTransmitted", info: "???" } ,
+                    { id: 25, name: "Canceled", info: "???" } ,
+                ],
+                // Others
+                testPrice: 0,
+                testSymbol: {
+                    code: "UAA",
+                    symbolId: 8053,
+                    trigger: [0, 8053, 0, 0, 0],
+                },
+                // Alerts
+                lastTimestamp: 0,
+                alerts: [],
+                // 
+                domain: window.location.host.indexOf("localhost") >= 0 ? "localhost:3061" : "stocktech.org:5000",
+                qr: {
+                    value: null,
+                    size: 160,
+                    level: 'L',
+                    background: '#ffffff',
+                    foreground: '#000000',
+                    renderAs: 'svg',
+                },
+                triggers: // [0:SID,1:TID,2:UID,3:ENV,4:BUY,5:SELL,6:PBuy]
+                    [
+                    ],
+                // Login 
+                closingLogin: 0,
+                closingClocking: 1,
+                showLoginPlaceholder: true,
+                showPasswordPlaceholder: true,
+                email: null,
+                privacyAgreement: false,
+                host: (window.location.host.indexOf("localhost") >= 0 ? "local": null),
+                isLocal: true || window.location.host.indexOf("localhost") >= 0,
+                timeout: 10,
+                confirmationChecks: 900,
+                loginIntervalHandler: null,
+                response: {userMessages:[]},
+                userMessage: 'Enter your email',
+                userMessageColor: 'orange',
+                userConfirmed: false,
+                highlightLogin: false,
+                qrTimestamp: 0,
+                timeLeft: 0,
+                showPassword: false,
+                password: null,
+                setUserIntervalHandler: null,
+
+                // Script Editor
+                showScriptEditor: true,
+                showLoginForm: true,
+                scriptCode: "plot(percent(1.5))",
+                // Basic
+                width: 1000,
+                userWarning: null,
+                JWT: null,
+                chart: null,
+            }
+        },
+        mounted(){
+            var context = this;
+            
+            // Window
+            symbolIdsDictionary = window.symbolIdsDictionary;
+            window.setRecentPriceHistory = this.setRecentPriceHistory_otb_fn;
+            
+            // URL
+            const urlParams = new URLSearchParams(window.location.search);
+            this.url = window.location.search;
+            context.debugMessages.push("URL: " + window.location + " ");
+            
+            // window.setSymbol({ symbolId: 10, code: "CCL", price: 10.5 });
+
+            var symbolId = urlParams.get("symbolId");
+            if(symbolId){
+                var code = urlParams.get("code");
+                var price = urlParams.get("price");
+                this.symbol = { symbolId: parseInt(symbolId), code: code, price: parseFloat(price) };
+            }
+            var userId = urlParams.get("userId");
+            if(userId){
+                var token = urlParams.get("token");
+                var jwt = urlParams.get("jwt");
+                this.user = { userId: parseInt(userId), token: token, jwt: jwt, features: [] };
+            }
+
+            var orderId = urlParams.get("orderId");
+            if(orderId){
+                this.orderId = parseInt(orderId);
+            }
+
+            var balanceId = urlParams.get("balanceId");
+            if(balanceId){
+                this.balanceId = parseInt(balanceId);
+            }
+
+            var backTo = urlParams.get("backTo");
+            if(backTo){
+                this.backTo = backTo;
+            }
+
+            var env = urlParams.get("env");
+            if(env){
+                this.env = env;
+                libService.setBackground_otb_fn(this, env, "urlParams");
+                this.appStarted_otb_fn();
+            }
+            userService.restoreUser_otb_fn(context);
+            this.setUserIntervalHandler = setInterval(userService.restoreUser_otb_fn, 400, context);
+        },
+        computed:{
+            filteredSymbols_otb_fn() {
+                return (searchText) => {
+                    if (!this.searchText) {
+                        return this.symbols;
+                    }
+                    var searchTerm = this.searchText.toLowerCase();
+                    return this.symbols.filter(item => {
+                        return !item.deleted && (!searchTerm
+                            || (item.code && item.code.toLowerCase().includes(searchTerm))
+                            || (item.info && item.info.toLowerCase().includes(searchTerm)));
+                    });
+                }
+            },
+            isVisible(){
+                return (item, searchText) => {
+                    if (!this.searchText) {
+                        return true;
+                    }
+                    var searchTerm = this.searchText.toLowerCase();
+                    return !item.deleted && (!searchTerm
+                        || (item.code && item.code.toLowerCase().includes(searchTerm))
+                        || (item.info && item.info.toLowerCase().includes(searchTerm)));
+                }
+            },
+            computePercentage_otb_fn() {
+                return (a, b) => {
+                    return parseInt((a >= b ? a / b : b / a) * 1000000 - 1000000)/10000;
+                }
+            },
+            computeInterval_otb_fn(){
+                return (a, b) => {
+                    var seconds = a-b;
+                    return timeService.timeSpan_otb_fn(seconds);
+                }
+            },
+        },
+        methods: {
+            setRecentPriceHistory_otb_fn(alerts){
+                // STEP 01: Data received
+                var context = this;
+                if(context.waitingForUI){
+                    alerts.forEach(alert => {
+                        context.chartsToDraw.push(alert);
+                        context.alertsPriceHistory.push(alert);
+                    });
+
+                    // context.performanceMessages.push("WaitingForUI: " + (context.chartsToDraw.length) + " ");
+                    return;
+                }
+                else
+                {
+                    // context.performanceMessages.push("Direct: " + (alerts.length) + " ");
+                    alerts.forEach(alert => {
+                        var symbol = context.symbols.find(p=>p.symbolId === alert.symbolId);
+                        if(symbol) {
+                            context.drawSymbolSparkline_otb_fn(symbol, alert.data);
+                        }
+                        else{
+                            context.performanceMessages.push("missing symbol: " + (alert.symbolId) + " ");
+                        }
+                        context.alertsPriceHistory.push(alert);
+                    });
+                }
+                return alerts.map(p=> p.symbolId).join(",");
+            },
+            selectAlert_otb_fn(alert){
+                var context = this;
+                this.selectedAlert = alert;
+                if(alert) {
+                    context.orderId = alert.alertId;
+                    context.goToBalanceLink = "../balance?env=" + context.env + "&userId=" + context.user.userId + "&token=" + context.user.token + "&symbolId=" + context.selectedAlert.symbolId + "&code=" + context.selectedAlert.code + "&price=" + context.selectedAlert.price + "&orderId=" + context.selectedAlert.orderId + "&balanceId=" + context.selectedAlert.balanceId + "&backTo=orders&jwt=" + context.user.jwt;
+                    context.href = "../symbol?env=" + context.env + "&userId=" + context.user.userId + "&token=" + context.user.token + "&symbolId=" + context.selectedAlert.symbolId + "&code=" + context.selectedAlert.code + "&price=" + context.selectedAlert.price + "&orderId=" + context.selectedAlert.orderId + "&backTo=orders&jwt=" + context.user.jwt;
+                    priceService.fetchRealTimePrice_otb_fn(this.selectedAlert);
+                }
+                else{
+                    context.alertId = null;
+                }
+            },
+            appStarted_otb_fn(){
+                clearInterval(this.setUserIntervalHandler);
+                var context = this;
+                Vue.nextTick(function () {
+                    if (context.$refs.appMenu) {
+                        context.$refs.appMenu.updateMenu_otb_fn(context);
+                    }
+                });
+                if(this.env === "Dev"){
+                    // this.symbols.push(this.testSymbol);
+                }
+
+                this.loadSymbolsDictionary_otb_fn();
+                
+                this.getBalance_otb_fn();
+                this.getAlerts_otb_fn();
+                this.pullPrices_otb_fn();
+                setInterval(() => this.pullPrices_otb_fn(), 5000);
+                this.hrefBack = "../"+this.backTo+"?env="+this.env+'&userId='+this.user.userId+'&token='+this.user.token+'&symbolId='+(this.symbol ? this.symbol.symbolId : 0)+'&code='+(this.symbol ? this.symbol.code : null)+'&price='+(this.symbol ? this.symbol.price : 0)+'&orderId='+this.orderId+'&balanceId='+this.balanceId+'&backTo=orders&jwt='+this.user.jwt;
+
+                // this.progressBar_intervalHandler = setInterval(() => this.updateProgressBar(), 1000);
+                this.timeAgoHandler = setInterval(() => {
+                    timeService.updateTimeAgo_otb_fn(context);
+                }, 500, context);
+            },
+            getBalance_otb_fn(){
+                var context = this;
+                this.info1 = !this.info1;
+                return;
+                var model = {};
+                var resolvedEndpoint = "https://" + this.domain + "/api/balance/" + this.env + "/" + this.user.token + "/alpaca/AccountInfo";
+                $.ajax({
+                    headers: {
+                        "Authorization": "Bearer "  + this.user.jwt,
+                    },
+                    url: resolvedEndpoint,
+                    dataType: "json",
+                    type: "POST",
+                    data: JSON.stringify(model),
+                    contentType: "application/json",
+                    success: function(json){
+                        if(json) {
+                            context.balanceExists = true;
+                            context.lastEquityValue = json.equity;
+                            context.cash = json.cash;
+                            context.lastPercentValue = Math.round(1000 - ((json.last_equity / json.equity) * 1000)) / 10;
+                        }
+                    }
+                });
+            },
+
+            updateRecentPrices_otb_fn(index, symbol){
+                var context = this;
+                
+                {
+                    context.drawSymbolSparkline_otb_fn(symbol, this.generateIntArray_otb_fn(300));
+                    return;
+                }
+
+                // STEP 02: Build received
+                var alert = context.chartsToDraw.find(p=>p.symbolId == symbol.symbolId);
+                if(alert){
+                    context.drawSymbolSparkline_otb_fn(symbol, alert.data);
+                    // context.performanceMessages.push("...: " + symbol.symbolId + "-" + alert.data.length);
+                    return 1;
+                }
+                else{
+                    // context.performanceMessages.push("missing alert: " + symbol.symbolId + " ");
+                }
+                return 0;
+                $.ajax({
+                    // url: (this.status.skipApiCalls ? "selections.json" : "https://"+context.main_host+":4105/api/intervals/Prod/Flo/collect/" + symbol.symbolId + "/last_month"),
+                    headers: {
+                        "Authorization": "Bearer "  + this.user.jwt,
+                    },//  https://stocktech.org:5000/api/processor/Prod/Flo/collect/symbolIds/42,50,55/recent_price_history
+                    url: "https://stocktech.org:5000/api/processor/Prod/Flo/collect/symbolIds/" + symbol.symbolId + "/recent_price_history",
+                }).done(function (data) {
+                    data = data[symbol.symbolId];
+                    symbol.data = data;
+                    if(!data.length) return;
+                    var ticks = data;                    
+                    var ticksArray = ticks;
+                    context.drawSymbolSparkline_otb_fn(symbol.symbolId, ticksArray);
+                }).fail(function(xhr, status, error) {
+                    console.log("error");
+                });
+            },
+            generateIntArray_otb_fn(len){
+                return [...Array(len)].map(e=>Math.random()*100);
+            },
+            drawSymbolSparkline_otb_fn(symbol, ticksArray){
+                var context = this;
+                context.symbolsLeft--;
+                symbol.loaded = true;
+                symbol.ticks = ticksArray;
+                context.$nextTick(() => {
+                    if(symbol.symbolId == 3){
+                       // context.performanceMessages.push("...: " + symbol.symbolId + "-" + ticksArray.length);
+                    }
+                    // $('#ch_' + symbol.symbolId + '_1').sparkline(ticksArray, {type: 'line', lineColor: 'red', width: '150px', height: '50px', minValue: 0});
+                    // $('#tg_' + symbolId + '_0').html(timeService.timeAgo_otb_fn(data[data.length-1][0]));
+                    // $('#tp_' + symbol.symbolId + '_0').html(context.computePercent_otb_fn(ticksArray));
+                    // $('#td_' + symbol.symbolId + '_0').html(context.computeDuration_otb_fn(ticksArray));
+                    // $('#lud_' + thisSymbol.symbolId).html('Updated ' + timeService.timeAgo_otb_fn(data[data.length-1][0]) + ' ago');
+                });
+            },
+            initSymbols_otb_fn(symbolIds) {
+                // this.symbols = symbolIds.map(symbolId => { return { symbolId: symbolId, code: 'test' }});
+                this.symbols = symbolIds.map(symbolId => { return { symbolId: symbolId, code: this.symbolCodeFromId_otb_fn(symbolId), data: [], loaded: false }});
+                this.symbolsLeft = this.symbols.length;
+                this.buildSymbols_otb_fn(this);
+            },
+            computePercent_otb_fn(ticks){
+                var values = ticks.map(p=>p[1]);
+                var min = Math.min(...values);
+                var max = Math.max(...values);
+                // return max-min;
+                return Math.round(1000 - ((min / max) * 1000)) /10;
+            },
+            computeDuration_otb_fn(ticks, symbolId){
+                if(!ticks){
+                    return 0;
+                }
+                var seconds = ticks[ticks.length-1][0] - ticks[0][0];
+                $('#ch_' + symbolId + '_1').sparkline(ticks, {type: 'line', lineColor: 'red', width: '150px', height: '50px', minValue: 0});
+                return this.duration_otb_fn(seconds);
+            },
+            duration_otb_fn(seconds) {
+                if (!seconds) {
+                    return '-';
+                }
+
+                else if (seconds > 604800) {
+                    return parseInt(seconds / 604800) + " w";
+                }
+                else if (seconds > 86400) {
+                    return parseInt(seconds / 86400) + " days";
+                }
+                else if (seconds > 3600) {
+                    return parseInt(seconds / 3600) + " h";
+                }
+                else if (seconds > 60) {
+                    return parseInt(seconds / 60) + " min";
+                }
+                else {
+                    return parseInt(seconds) + " sec";
+                }
+            },
+            symbolCodeFromId_otb_fn(symbolId){
+                var symbol = this.knownSymbolsArray.find(p=>p.symbolId === symbolId);
+                return symbol ? symbol.code : '-';
+            },
+            buildSymbols_otb_fn(context) {
+                context.$nextTick(() => {
+                    var i = 0;
+                    context.waitingForUI = false;
+                    var items = 0;
+                    context.symbols.forEach((p, index)=>{
+                        // if(index >= context.pageSize) return;
+                        // if(window.location.host.indexOf("localhost") >= 0) 
+                        {
+                            var res = context.updateRecentPrices_otb_fn(index, context.symbols[index]);
+                            items += res;
+                        }
+                    });
+                    // context.performanceMessages.push("Recreated: " + (items) + " ");
+                    // if(context.symbols.map(p=>p.symbolId).indexOf(context.selectedSymbol_0.symbolId) == -1)
+                    {
+                        // context.loadSymbol(0, context.symbols[i]);
+                        i++;
+                    }
+
+                    // context.updateLastLastPrice_LastMonth_otb_fn();
+                    // context.updateLastLastPrice_LastYear_otb_fn();
+                });
+            },
+            loadSymbolsDictionary_otb_fn() {
+                var context = this;
+                $.ajax({
+                    url: "symbols.json",
+                }).done(function (data) {
+                    context.symbolIdFromCode = data;
+                    context.knownSymbolsArray = context.symbolDictionaryToObjectsArray_otb_fn(data);
+                    context.symbolIds = context.knownSymbolsArray.map(p=> { return p.symbolId } );
+                    context.initSymbols_otb_fn(context.symbolIds);
+                }).fail(function(xhr, status, error) {
+                    console.log("error" + error);
+                });
+            },
+            symbolDictionaryToObjectsArray_otb_fn(symbolsDictionary){
+                return Object.keys(symbolsDictionary).map((p, v)=> {
+                    return { symbolId: symbolsDictionary[p], code: p }
+                });
+            },
+            pullPrices_otb_fn(){
+                var context = this;
+                $.ajax({
+                    // url: (this.useFileResources ? "selections.json" : "https://"+context.main_host+":4107/api/prices"),
+                    headers: {
+                        "Authorization": "Bearer "  + this.user.jwt,
+                    },
+                    url: "https://localhost:4105/api/symbol/" + this.env + "/Flo/Back/prices",
+                }).done(function (data) {
+                    if(!data.length) return;
+                    context.priceFrame = data;
+                    context.prices = data;
+                    context.appendRealTimePrices_otb_fn(context, data, true); // Append or update
+                }).fail(function(xhr, status, error) {
+                    console.log("error");
+                });
+            },
+            getAlerts_otb_fn(){
+                var context = this;
+                this.i=13;
+                var resolvedEndpoint = "https://" + this.domain + "/api/pushNotification/Prod/" + this.user.token + "/list/20/from/0";
+                context.debugMessages.push("getAlerts: " + this.env + " " + (this.user ? this.user.token : -1) + " " + (this.user ? this.user.jwt != 'undefined' : -1) + " " + resolvedEndpoint);
+                $.ajax({
+                    headers: {
+                        "Authorization": "Bearer "  + this.user.jwt,
+                    },
+                    url: resolvedEndpoint,
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function(json) {
+                        // context.debugMessages.push(JSON.stringify(json));
+                        context.i = 14;
+                        if (json) {
+                            json.forEach(p=>{
+                                p.code = symbolIdsDictionary[p.symbolId];
+                            })
+                            context.alerts = json;
+                            context.debugMessages.push("getAlerts: " + (json.length) + " ");
+                        }
+                        else{
+                            context.debugMessages.push("getAlerts: is empty");
+                        }
+                        context.loadingOrders = false;
+                        if (context.alertId) {
+                            context.i = 15;
+                            var selectedAlert = context.alerts.find(p => p.alertId === context.alertId);
+                            if (selectedAlert) {
+                                context.i = 16;
+                                context.selectOrder_otb_fn(selectedAlert);
+                            }
+                        }
+                    }
+                }).fail(function(xhr, status, error) {
+                    var errorMessage = xhr.status + ': ' + xhr.statusText;
+                    context.debugMessages.push("(getAlerts) error: " + errorMessage + " ");
+                });
+            },
+
+            // Login
+        }
+    });
+</script>
+
+<!-- Page content -->
+</html>

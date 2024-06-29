@@ -1,0 +1,506 @@
+<html manifest="cache.manifest"><head>
+    <meta http-equiv="cache-control" content="public, max-age=3600">
+
+    <script async="" src="https://www.googletagmanager.com/gtm.js?id=GTM-MK93QD8"></script><script>
+    window.appLoadingStarted = new Date();
+</script>
+    <script type="text/javascript" src="update_cache.js"></script>
+
+    <script src="./../lib/uPlot/uPlot.min.js"></script>
+    <script src="./../lib/popper/popper.min.js" asp-append-version="true"></script>
+    <script src="./../lib/jquery/jquery.min.js" asp-append-version="true"></script>
+    <script src="./../lib/bootstrap/js/bootstrap.min.js" asp-append-version="true"></script>
+    <script src="./../lib/vue/vue.js" asp-append-version="true"></script>
+    <script src="../../js/site.js" asp-append-version="true"></script>
+
+
+    <style>
+        .otb-show-init{
+            display: block
+        }
+
+
+        #pre_loading_container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            padding: 3px;
+            display: block;
+        }
+        #pre_loading_bar {
+            width: 0;
+            height: 10px;
+            background-color: #4caf50;
+            border-radius: 5px;
+            transition: width 15s ease-in-out;
+        }
+        #pre_loading {
+            display: block;
+            max-width: 350px;
+            _background-color: rgb(255, 255, 44);
+            border-radius: 20px;
+            _border: 1px solid gray;
+            text-align: center;
+            _padding: 20px 10px;
+            margin: 5px;
+            font-weight: bold;
+        }
+        
+        .large{
+            font-family: 'Courier New', Courier, monospace;
+            font-size: large;
+            font-weight: bold;
+        }
+    </style>
+
+    <script type="module" src="./index.js"></script>
+
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-MK93QD8');</script>
+    <!-- End Google Tag Manager -->
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-2R5RBMN7E2"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-2R5RBMN7E2');
+    </script>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Master</title>
+
+    <meta property="og:title" content="StockTech.org">
+    <meta property="og:image" content="https://stocktech.org/img/PriceEvolution.png">
+    <meta property="og:type" content="article">
+    <meta property="fb:app_id" content="1641916685886296">
+    <meta property="og:description" content="Multiple stock price charts.">
+    <meta property="og:url" content="https://stocktech.org/">
+
+    <meta name="csrf-token" content="@GetAntiXsrfRequestToken()">
+    <meta name="theme-color" content="#343a40">
+    <meta name="user-id" content="@User.GetUserId()">
+    <meta name="user-name" content="@userRepo.GetById(User.GetUserId())?.UserName">
+    <meta name="user-hash" content="@intercomService.CreateUserToken(User.GetUserId().ToString())">
+    <meta name="intercom-app-id" content="@intercomService.GetIntercomAppId()">
+
+    <link rel="shortcut icon" href="./images/favicon.png" asp-append-version="true">
+
+    <link rel="stylesheet" href="./../lib/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href=".../../ss/main.css">
+    <link rel="stylesheet" href="../css/site.css">
+
+<body class="d-flex flex-column" onload="checkForUpdate()">
+
+<br>
+
+<div class="wrapper">
+
+    <!-- Start of ProgressApp -->
+    <div id="progressApp"><div><div class="top-progress" style="top: 0px; left: 0px; right: 0px; position: absolute; width: 0%; height: 0px; background-color: rgb(34, 153, 221); opacity: 1; z-index: 9999;"><div class="peg" style="right: 0px; width: 100px; height: 5px; opacity: 1;"></div></div> </div> <!----></div>
+
+    <!-- Start of ProgressApp -->
+
+    <main role="main" class="container-fluid body-content flex-grow">
+
+    </main>
+    <div class="modal-backdrop-admin"></div>
+</div>
+
+
+<script src="./../lib/jquery/jquery.min.js" asp-append-version="true"></script>
+<script src="./../lib/bootstrap/js/bootstrap.min.js" asp-append-version="true"></script>
+<script src="./../lib/vue/vue.js" asp-append-version="true"></script>
+<script src="../../js/site.js" asp-append-version="true"></script>
+
+
+
+
+
+
+<div id="ajuroApp" class="row otb-white-page"><div xmlns="http://www.w3.org/1999/html" class="v-data-table theme--light"><!----></div> 
+
+    <div class="otb-app-header light bg-green" style="display: block">
+        <div class="otb-show-init text-primary otb-app-search otb-show-ready">
+            <span class="otb-logo-button"><span><i class="fa fa-align-justify" style="color: blue;"></i> <span>
+                StockTech.org
+                <i class="fa fa-search" style="color: blue;"></i></span></span></span>
+        </div> 
+        <div class="otb-hide-init text-primary otb-app-search otb-hide-ready"><span class="otb-logo-button"><span><i class="fa fa-home" style="color: blue;"></i> <!----> <span>
+                
+                <i class="fa fa-search" style="color: blue;"></i></span></span></span>
+       
+        <span><span class="no-select">
+        <a target="_self" href="./../login"><span class="otb-login-button">Log in</span></a>
+         <!----></span></span> <!----></div> <!----></div> <!----> <!----> <div><div>
+    </div></div> <div id="parent-center" class="parent-center  row m-50"><div class="col-md-12 child-center">
+        <div class="inside-center"><br> <div class="v-data-table theme--light">
+            <div class="v-data-table__wrapper"><div id="preview" class="otb-expert-visitor">
+                <div style="display: none;"></div> 
+                <div><div data-draggable="true" style="position: relative;">
+                    <section id="noMobile" draggable="false" data-v-271253ee="" class="overflow-hidden pt-0"><section>
+                        <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" preserveAspectRatio="none" class="svg position-absolute d-none d-lg-block" style="height: 290px; width: 100%; z-index: 0;"><defs><linearGradient id="sw-gradient-0" x1="0" x2="0" y1="1" y2="0"><stop stop-color="hsl(257, 64.7%, 95.1%)" offset="0%"></stop> <stop stop-color="hsl(257, 64.7%, 85.1%)" offset="100%"></stop></linearGradient></defs> <path fill="url(#sw-gradient-0)" d="M 0.351 264.418 C 0.351 264.418 33.396 268.165 47.112 270.128 C 265.033 301.319 477.487 325.608 614.827 237.124 C 713.575 173.504 692.613 144.116 805.776 87.876 C 942.649 19.853 1317.845 20.149 1440.003 23.965 C 1466.069 24.779 1440.135 24.024 1440.135 24.024 L 1440 0 L 1360 0 C 1280 0 1120 0 960 0 C 800 0 640 0 480 0 C 320 0 160 0 80 0 L 0 0 L 0.351 264.418 Z"></path></svg> <div class="container"><section class="pt-5"><div class="row"><div class="col-12"><div>
+                        <h1 class="fw-bold otb-welcome-title">
+                            StockTech
+                            <span style="float: right; font-size: medium">
+                                <a target="_self" href="login.html"><span class="otb-login-button">Log in</span></a>
+                            </span>
+                        </h1> <!----></div></div></div></section></div></section></section></div> 
+                    <div><div data-draggable="true" style="position: relative;">
+                        <section draggable="false" data-v-271253ee="" class="container pt-5 otb-welcome-details">
+                            <section><div class="d-flex justify-content-center">
+                                <div class="text-center" style="max-width: 700px;">
+                    <p class="fw-bold mb-4" style="font-size: large; padding: 5px">
+                        Find dynamic and interactive charts when you login for free
+                    </p>
+                    
+                    <p class="text-uppercase text-primary fw-bold mb-4" style="display: none">Features</p>
+                    <div id="charts-area">
+                        
+                    </div>
+                    <hr>
+                    <h2 class="fw-bold mb-4">Why is it so great?</h2> 
+        <p class="text-muted mb-5">We devoted to show comparative decision-making information so that you can choose wisely how to invest. Build with enthusiasm to provide decision support for stock market trading</p>
+                    
+    </div></div> 
+                    <div class="row" style="display: none"><div class="col-lg-3 col-md-6 mb-5"><div class="d-flex align-items-start">
+    <div class="flex-shrink-0"><span class="text-success large">&#10003;</span></div> <div class="flex-grow-1 ms-3"><p class="fw-bold mb-1">S&amp;P 500</p> <p class="text-muted mb-0">We consider that focusing on most reliable companies, your capital is exposed to a lower risk.</p></div></div></div> <div class="col-lg-3 col-md-6 mb-5"><div class="d-flex align-items-start">
+    <div class="flex-shrink-0"><span class="text-success large">&#10003;</span></div> <div class="flex-grow-1 ms-3"><p class="fw-bold mb-1">Charts</p> <p class="text-muted mb-0">You have now a simple dashboard to follow from your mobile device. Less details to consume your focus.</p></div></div></div> <div class="col-lg-3 col-md-6 mb-5"><div class="d-flex align-items-start">
+    <div class="flex-shrink-0"><span class="text-success large">&#10003;</span></div> <div class="flex-grow-1 ms-3"><p class="fw-bold mb-1">Algorithms</p> <p class="text-muted mb-0">We use complex algorithms to keep on our dashboard only the symbols that captured our attention.</p></div></div></div> <div class="col-lg-3 col-md-6 mb-5"><div class="d-flex align-items-start">
+    <div class="flex-shrink-0"><span class="text-success large">&#10003;</span></div> <div class="flex-grow-1 ms-3"><p class="fw-bold mb-1">Artificial Intelligence</p> <p class="text-muted mb-0">We use artificial intelligence to analyze multiple symbols at once. This can help avoid stock crashes.</p></div></div></div></div></section></section></div> 
+                    
+                    <div class="justify-content-center" style="display: none">
+                        <div class="text-center" style="max-width: 700px;">
+                            <p class="text-uppercase text-primary fw-bold mb-4">Pricing</p> 
+                            <p class="text-muted mb-5">Select your best plan</p>
+                        </div>
+                    </div>
+                </div>
+                    
+                    
+                    <!----> 
+                    <section draggable="false" data-v-271253ee="" class="container pt-5" style="display: none">
+                        <section><div style="padding: 1px; margin: 20px 1px; border-top: 3px solid gray;"><div><div class="row"><div class="col-sm"><div class="d-flex align-items-start"><div class="card border-radius-top-end-lg-0 border-radius-bottom-end-lg-0 otb-price-card"><div class="card-header text-center pt-4 pb-3 border-0">
+                        <div class="otb-price-title"> Free </div> <span><span class="otb-price otb-price-free">Free </span></span> 
+                        <h3 class="otb-price-note">Not available at the moment</h3></div> <div class="card-body mx-auto pt-0 text-muted"><div class="justify-content-start d-flex px-2 py-1"><div><i aria-controls="#picker-editor" class="fas fa-check"></i></div> <div class="ps-2"><span style="margin-left: 10px;"> 20 charts on dashboard</span></div></div> <div class="justify-content-start d-flex px-2 py-1"><div><i aria-controls="#picker-editor" class="fas fa-check"></i></div> <div class="ps-2"><span style="margin-left: 10px;"> Notifications in chrome plugin</span></div></div> <div class="justify-content-start d-flex px-2 py-1"><div></div> <div class="ps-2"><span style="margin-left: 10px;"></span></div></div></div> <div class="card-footer pt-2 pb-4 border-0"><div><a href="#!" aria-controls="#picker-editor" class="btn btn-warning btn-block gradient-custom-2 mb-0">Subscribe now</a></div> <!----> <!----></div></div></div></div> <div class="col-sm"><div class="d-flex align-items-start"><div class="card border-radius-top-end-lg-0 border-radius-bottom-end-lg-0 otb-price-card"><div class="card-header text-center pt-4 pb-3 border-0"><div class="otb-price-title"> Basic </div>
+                        <span><span class="otb-price otb-price-Basic"><small>$</small>3 / month</span></span> 
+                        <h3 class="otb-price-note">Not available at the moment</h3></div> <div class="card-body mx-auto pt-0 text-muted"><div class="justify-content-start d-flex px-2 py-1"><div><i aria-controls="#picker-editor" class="fas fa-check"></i></div> <div class="ps-2"><span style="margin-left: 10px;"> 20 charts on dashboard</span></div></div> <div class="justify-content-start d-flex px-2 py-1"><div><i aria-controls="#picker-editor" class="fas fa-check"></i></div> <div class="ps-2"><span style="margin-left: 10px;"> Notifications in chrome plugin</span></div></div> <div class="justify-content-start d-flex px-2 py-1"><div></div> <div class="ps-2"><span style="margin-left: 10px;"></span></div></div></div> <div class="card-footer pt-2 pb-4 border-0"><div><a href="#!" aria-controls="#picker-editor" class="btn btn-warning btn-block gradient-custom-2 mb-0">Subscribe now</a></div> <!----> <!----></div></div></div></div> <div class="col-sm"><div class="d-flex align-items-start"><div class="card border-radius-top-end-lg-0 border-radius-bottom-end-lg-0 otb-price-card"><div class="card-header text-center pt-4 pb-3 border-0"><div class="otb-price-title"> Professional </div> 
+                        <span><span class="otb-price otb-price-Professional"><small>$</small>5 / month</span></span> 
+                        <h3 class="otb-price-note">Not available at the moment</h3></div> <div class="card-body mx-auto pt-0 text-muted"><div class="justify-content-start d-flex px-2 py-1"><div><i aria-controls="#picker-editor" class="fas fa-check"></i></div> <div class="ps-2"><span style="margin-left: 10px;"> 20 charts on dashboard</span></div></div> <div class="justify-content-start d-flex px-2 py-1"><div><i aria-controls="#picker-editor" class="fas fa-check"></i></div> <div class="ps-2"><span style="margin-left: 10px;"> Notifications in chrome plugin</span></div></div> <div class="justify-content-start d-flex px-2 py-1"><div></div> <div class="ps-2"><span style="margin-left: 10px;"></span></div></div></div> <div class="card-footer pt-2 pb-4 border-0"><div><a href="#!" aria-controls="#picker-editor" class="btn btn-warning btn-block gradient-custom-2 mb-0">Subscribe now</a></div> <!----> <!----></div></div></div></div></div> <!----></div></div>
+                        </section>
+                    </section>
+                </div></div></div></div>  <!----> <!----></div> <br> <!----></div></div> <div class="v-data-table theme--light"><div style="display: none" class="gdprcookie" id="gdprcookie"><h1>Cookies &amp; Privacy</h1> <p style="color: gray;">
+    Cookies (and local storage) enable you to use shopping carts and to personalize your experience on our sites, tell us which parts of our websites people have visited,
+    help us measure the effectiveness of ads and web searches, and give us insights into user behaviour so we can improve our communications and products. <br>
+    Check our <a href="PrivacyPolicy.html">Privacy Policy</a> for details.
+    <br></p> <div class="gdprcookie-types">
+    Select cookies (and local storage) to accept:
+    <ul>
+        <li><input type="checkbox" data-testId="sl_chk_Cookie_Essential" checked name="privacyAgreement_Esentials"><label for="SL_chk_Cookie_Essential" title="These are cookies that are essential for the website to work correctly.">Essential</label></li> 
+        <li><input type="checkbox" data-testId="sl_chk_Cookie_Analytics" checked name="privacyAgreement_Analytics"><label for="SL_chk_Cookie_Analytics" title="Cookies related to site visits, browser types, etc.">Analytics</label></li> 
+        <li><input type="checkbox" data-testId="sl_chk_Cookie_Marketing" checked name="privacyAgreement_Marketing"><label for="SL_chk_Cookie_Marketing" title="Cookies related to marketing, e.g. newsletters, social media, etc">Marketing</label></li> 
+        <li><input type="checkbox" data-testId="sl_chk_Cookie_Site" checked name="privacyAgreement_Preferences"><label for="SL_chk_Cookie_Site" title="These are cookies that are related to your site preferences, e.g. remembering your username, site colours, etc.">Site Preferences</label></li>
+    </ul></div> <div class="gdprcookie-buttons"><button data-testId="sl_btn_AcceptCookies_Modal" onclick="updateCookieAgreement()" type="button">Accept cookies</button></div></div></div> <!----> <!----> <div class="break"></div> <!----> <!----> <!---->
+ <!----> <div class="otb-hide-init otb-app-footer  otb-hide-ready">v1.3
+    <a href="?" data-testId="sl_txt_ContactLink">Home</a> |
+    <a href="?view=GDPR" data-testId="sl_txt_ContactLink">GDPR, Cookies, User Agreement</a> |
+    <!----> <a href="?view=Support">Contact</a> <!----> <br> <span data-testId="sl_txt_TermsAndConditions">Terms and conditions</span> |
+    <span data-testId="sl_txt_Subscriptions">Subscriptions and free trials</span> |
+    <span data-testId="sl_txt_PrivacyPolicy">Privacy policy</span> |
+    <span data-testId="sl_txt_DeliveryInformation">Delivery information</span> <br> <span data-testId="sl_txt_RefundPolicy">Refund policy</span> |
+    <span data-testId="sl_txt_ContactInformation">Contact information</span> |
+    <span data-testId="sl_txt_CheckoutAndPayments">Payment process information</span> <br> <br> <br> 
+        
+        </div></div>
+                                                                                               
+</div>
+
+
+
+
+<script>
+
+    let symbols = [
+        {
+            "code": "TSLA",
+            "symbolId": 3
+        },
+        {
+            "code": "NVR",
+            "symbolId": 5714
+        },
+        {
+            "code": "BKNG",
+            "symbolId": 930
+        },
+        {
+            "code": "ISRG",
+            "symbolId": 4273
+        },
+        {
+            "code": "ALGN",
+            "symbolId": 303
+        },
+        {
+            "code": "PAYC",
+            "symbolId": 5996
+        },
+        {
+            "code": "GOOG",
+            "symbolId": 3461
+        },
+        {
+            "code": "GOOGL",
+            "symbolId": 3462
+        },
+        {
+            "code": "FLT",
+            "symbolId": 2978
+        },
+        {
+            "code": "AMZN",
+            "symbolId": 414
+        },
+        {
+            "code": "BA",
+            "symbolId": 1
+        },
+        {
+            "code": "DXCM",
+            "symbolId": 2250
+        },
+        {
+            "code": "MSCI",
+            "symbolId": 5288
+        },
+        {
+            "code": "AZO",
+            "symbolId": 704
+        },
+        {
+            "code": "MTD",
+            "symbolId": 5307
+        },
+        {
+            "code": "CTAS",
+            "symbolId": 1788
+        },
+        {
+            "code": "ZBRA",
+            "symbolId": 8830
+        },
+        {
+            "code": "MLM",
+            "symbolId": 5159
+        },
+        {
+            "code": "AVB",
+            "symbolId": 643
+        },
+        {
+            "code": "UNH",
+            "symbolId": 8152
+        }
+    ];
+    
+    document.addEventListener('DOMContentLoaded', function() {
+
+        var area = document.getElementById("charts-area");
+        symbols.forEach(symbol =>{
+            let card = createSymbolCard(symbol);
+            area.appendChild(card);
+        });
+        
+        var isMobile = window.innerWidth < 800;
+        if(isMobile){
+            var page = document.getElementById("parent-center");
+            page.className = "parent-center";
+            var login2 = document.getElementById("noMobile");
+            login2.style.display = 'none';
+        }
+        
+        loadJSON("https://stocktech.org:5000/api/symbolCharts/get/5d/charts", showData);
+        
+        var storageAgreementString = localStorage.getItem("StorageAgreements");
+        if(storageAgreementString) {
+            var storageAgreements = JSON.parse(storageAgreementString)
+            if (storageAgreements) {
+                document.getElementById("gdprcookie").style.display = 'none';
+                return;
+            }
+        }
+        document.getElementById("gdprcookie").style.display = 'block';
+    });
+    
+    function updateCookieAgreement(){
+        var storageAgreements = {
+            Esentials: document.getElementById("SL_chk_Cookie_Essential").checked,
+            Preferences: document.getElementById("SL_chk_Cookie_Site").checked,
+            Marketing: document.getElementById("SL_chk_Cookie_Marketing").checked,
+            Analytics: document.getElementById("SL_chk_Cookie_Analytics").checked,
+        };
+
+        localStorage.setItem("StorageAgreements", JSON.stringify(storageAgreements));
+        document.getElementById("gdprcookie").style.display = 'none';
+    }
+    
+    function createSymbolCard(symbol){
+        // Create the main container span
+        var symbolCard = document.createElement('span');
+
+        // Create the inner span with styles
+        var innerSpan = document.createElement('span');
+        innerSpan.style.display = 'inline-block';
+        innerSpan.style.margin = '5px';
+        innerSpan.style.border = '1px solid gray';
+        innerSpan.style.padding = '2px';
+
+        // Create the inner div
+        var innerDiv = document.createElement('div');
+        innerDiv.style.textAlign = 'left';
+
+        // Create the symbol span with styles
+        var symbolSpan = document.createElement('span');
+        symbolSpan.className = 'symbol';
+        symbolSpan.style.fontSize = 'large';
+        symbolSpan.style.backgroundColor = 'rgb(254, 255, 207)';
+        symbolSpan.style.fontWeight = 'bold';
+        symbolSpan.innerText = symbol.code;
+
+        // Append the symbol span to the inner div
+        innerDiv.appendChild(symbolSpan);
+
+        // Create the second span with id "ch_5714"
+        var secondSpan = document.createElement('div');
+        secondSpan.id = 'ch_' + symbol.symbolId;
+        secondSpan.style.minHeight = '80px';
+        secondSpan.innerText = 'Loading...'; // Add your content if needed
+
+        // Create the third div with text-align: right
+        var thirdDiv = document.createElement('div');
+        thirdDiv.style.textAlign = 'right';
+
+        // Create the third div with text-align: right
+        var waitingIcon = document.createElement('div');
+        // waitingIcon.innerText = 'Loding...';
+
+        // Create interval spans and append them to the third div
+        var intervals = ['1d', '5d', '1mo', '6mo', 'ytd', '1y'];
+        for (var i = 0; i < intervals.length; i++) {
+            var intervalSpan = document.createElement('span');
+            intervalSpan.className = 'otb-chart-interval';
+            if (i === 1) {
+                intervalSpan.className += ' selected';
+            }
+            intervalSpan.innerText = intervals[i];
+            thirdDiv.appendChild(intervalSpan);
+        }
+
+        // Append inner div, second span, and third div to the inner span
+        innerSpan.appendChild(innerDiv);
+        innerSpan.appendChild(secondSpan);
+        innerSpan.appendChild(waitingIcon);
+        innerSpan.appendChild(thirdDiv);
+
+        // Append the inner span to the main span
+        symbolCard.appendChild(innerSpan);
+
+        // Append the main span to the body or any desired container
+        return symbolCard;
+    }
+    
+    function showData(event, symbolsData){
+        let contextData = symbolsData;
+
+        // var firsts = symbolsData.splice(0, 20).map(p=> { return { code: p.Code, symbolId: p.SymbolId } });
+
+        const opts = {
+            title: "",
+            width: 310,
+            height: 150,
+            scales: {
+                x: {
+                    time: false,
+                    //	auto: false,
+                    //	range: [0, 6],
+                },
+                y: {
+                    // range: (min, max) => [Math.min(data[1]), Math.max(data[1])], // Optional, customize the range function if needed
+                    auto: true,
+                },
+            },
+            series: [
+                {
+                    label: "Time",
+                },
+                {
+                    label: "price",
+                    stroke: "red",
+                }
+            ],
+            legend: {
+                show: false, // Set to false to hide the legend
+            },
+            hooks: {
+                setCursor: (u, cursor) => {
+                    console.log('Crosshair moved to:', cursor);
+                },
+            },
+            axes: [{ show: false }, { show: false }],
+        };
+        symbols.forEach(symbol =>{
+            let symbolData = contextData.find(p=> p.symbolId == symbol.symbolId || p.SymbolId == symbol.symbolId);
+            if(!symbolData){
+                return;
+            }
+            symbol.Ticks = symbolData.Ticks.filter(p=>p[1] > 10);
+            let data = [
+                symbol.Ticks.map((p, index)=>index),
+                symbol.Ticks.map(p=>p[1])
+            ];
+            
+            let div = document.getElementById("ch_" + symbol.symbolId);
+            div.innerText = '';
+            // data = [[0,1,2,3,4,5,6,7,8,9,10], [8,1,5,3,4,5,2,7,8,4,10]];
+            new uPlot(opts, data, div);
+        });
+    }
+    function loadJSON(url, callback) {
+        // Use the fetch API to make a GET request
+        fetch(url)
+            .then(response => {
+                // Check if the request was successful (status code 200)
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                // Parse the response as JSON
+                return response.json();
+            })
+            .then(jsonData => {
+                // Call the callback function with the loaded JSON data
+                callback(null, jsonData);
+            })
+            .catch(error => {
+                // Call the callback function with the error if the request fails
+                callback(error, null);
+            });
+    }
+</script>
+
+
+
+<link href="../css/bootstrap-glyphicons.css" rel="stylesheet">
+<link rel="stylesheet" href="../css/gdpr-cookie.css">
+<link rel="stylesheet" href="../css/payments.css">
+
+<link rel="stylesheet" href="./../lib/uPlot/uPlot.min.css">
+<!--link rel="stylesheet" href="./lib/mdbvue/build/css/mdb.lite.css" /-->
+
+</body></html>

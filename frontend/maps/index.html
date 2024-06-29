@@ -1,0 +1,238 @@
+
+<script src="./../src/lib/jquery/jquery.js" asp-append-version="true"></script>
+<script src="./../src/lib/vue/vue.js"></script>
+
+<!-- TESTING -->
+<script src="./testing/testing_symbol_msft.js"></script>
+<script src="./testing/testing_symbol_amd.js"></script>
+
+<link rel="stylesheet" href="./../src/lib/bootstrap/css/bootstrap.css" />
+<link rel="stylesheet" href="./css/mobile.css"/>
+
+
+<style>
+    .mobile-frame{
+        width: 393px;
+        height: 851px
+    }
+</style>
+
+<div id="adminApp">
+<table>
+    <tr>
+        <td>
+            <iframe src="./help" id="helpFrame" class="mobile-frame"></iframe>
+            <div><a href="./help">Help</a></div>
+        </td>
+        <td>
+            <iframe id="menuFrame" src="./menu?page=page" class="mobile-frame"></iframe>
+            <div><a href="./menu?page=page">Menu</a></div>
+        </td>
+        <td>
+            <iframe id="alertsFrame" src="./alerts" class="mobile-frame"></iframe>
+            <div><a href="./alerts">Alerts</a></div>
+        </td>
+        <td rowspan="10" style="vertical-align: top; position: fixed;">
+            <div>
+                IsConnected: <input type="checkbox" v-model="appStatus.isConnected">
+
+                <div v-for="frame in frames">
+                    <div class="section-title">{{frame.id}}</div>
+                    <div v-for="useCase in frame.cases">
+                        <div @mouseenter="setDummyDataForWindow(frame, useCase)">
+                            <div>{{useCase.name}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <iframe src="./login" id="loginFrame" class="mobile-frame"></iframe>
+            <div><a href="./login">Login</a></div>
+        </td>
+        <td>
+            <iframe src="./logout" id="logoutFrame" class="mobile-frame"></iframe>
+            <div><a href="./logout">Logout</a></div>
+        </td>
+        <td>
+            <iframe src="./notifications" id="notificationsFrame" class="mobile-frame"></iframe>
+            <div><a href="./notifications">Notifications</a></div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <iframe src="./profile" id="profileFrame" class="mobile-frame"></iframe>
+            <div><a href="./profile">Profile</a></div>
+        </td>
+        <td>
+            <iframe src="./request" id="requestFrame" class="mobile-frame"></iframe>
+            <div><a href="./request">Request</a></div>
+        </td>
+        <td>
+            <iframe src="./options" id="optionsFrame" class="mobile-frame"></iframe>
+            <div><a href="./options">Settings</a></div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <iframe src="./schedule" id="scheduleFrame" class="mobile-frame"></iframe>
+            <div><a href="./schedule">Schedule</a></div>
+        </td>
+        <td>
+            <iframe src="./connections" id="connectionsFrame" class="mobile-frame"></iframe>
+            <div><a href="./connections">Connections</a></div>
+        </td>
+        <td>
+            <iframe src="./help" id="helpFrame" class="mobile-frame"></iframe>
+            <div><a href="./help">Help</a></div>
+        </td>
+    </tr>
+</table>
+</div>
+
+
+<script>
+    // SET BACKGROUND
+    document.urlParams = new URLSearchParams(window.location.search);
+    var env = document.urlParams.get('env');
+    if(env) {
+        setBackground(env);
+    }
+</script>
+<script type = "module">
+    
+    var recentPriceHistoryInitialized = false;
+    function InitializeRcentPriceHistory() {
+        var symbols = loadSymbolsDictionary_otb_fn(sendAlerts_otb_fn);
+    }
+    function sendAlerts_otb_fn(symbols){
+        var el = document.getElementById('alertsFrame');
+        var alertsFrame = getIframeWindow(el);
+        if (alertsFrame && alertsFrame.setRecentPriceHistory && !recentPriceHistoryInitialized) {
+            clearInterval(initializeRecentPriceHistoryInterval);
+            recentPriceHistoryInitialized = true;
+            // alertsFrame.setRecentPriceHistory(symbols.map(symbol => { return {symbolId: symbol.symbolId, data: [[3, 20], [4, 12], [7, 30],]} } ));
+            setTimeout(() => alertsFrame.setRecentPriceHistory(symbols.map(symbol => { return {symbolId: symbol.symbolId, data: [] } } ), true), 2000);
+
+
+            setTimeout(() => alertsFrame.setProgressStackBars({AllCount: 300, OldCount: 20, EmptyCount: 10, MissingCount: 30 }), 2000);
+            
+            
+        }
+    }
+
+    function symbolDictionaryToObjectsArray_otb_fn(symbolsDictionary){
+        return Object.keys(symbolsDictionary).map((p, v)=> {
+            return { symbolId: parseInt(symbolsDictionary[p]), data: v }
+        });
+    }
+    
+    function loadSymbolsDictionary_otb_fn(nextFunction) {
+        var context = this;
+        $.ajax({
+            url: "symbols.json",
+        }).done(function (data) {
+            var symbols = symbolDictionaryToObjectsArray_otb_fn(data);
+            nextFunction(symbols);
+        }).fail(function(xhr, status, error) {
+            console.log("error" + error);
+        });
+    }
+    
+    function getIframeWindow(iframe_object) {
+        var doc;
+
+        if (iframe_object.contentWindow) {
+            return iframe_object.contentWindow;
+        }
+
+        if (iframe_object.window) {
+            return iframe_object.window;
+        }
+
+        if (!doc && iframe_object.contentDocument) {
+            doc = iframe_object.contentDocument;
+        }
+
+        if (!doc && iframe_object.document) {
+            doc = iframe_object.document;
+        }
+
+        if (doc && doc.defaultView) {
+            return doc.defaultView;
+        }
+
+        // if (doc && doc.parentWindow) 
+        {
+            // return doc.parentWindow;
+        }
+
+        return undefined;
+    }
+
+    var initializeRecentPriceHistoryInterval = setInterval(InitializeRcentPriceHistory, 1000);
+
+    
+    let parent = new Vue({
+        el: "#adminApp",
+        props: [],
+        data() {
+            return {
+                frames: [
+                    {
+                        id: "symbolFrame",
+                        cases: [
+                            testing_symbol_msft,
+                            testing_symbol_amd
+                        ]
+                    },
+                ],
+                user: {
+                    userId: 1,
+                    token: "Flo",
+                },
+                symbol: {
+                    symbolId: 17,
+                    code: "CCL",
+                    price: 10.2
+                },
+                appStatus:{
+                    IsConnected: true
+                }
+            }
+        },
+        mounted(){
+            var context = this;
+
+            var el = document.getElementById('alertsFrame');
+            var alertsFrame = getIframeWindow(el);
+            if (alertsFrame) {
+                setInterval(() => alertsFrame.getPageStatus(context.appStatus), 2000, context.appStatus);
+            }
+
+            var el_menuFrame = document.getElementById('menuFrame');
+            var menuFrame = getIframeWindow(el_menuFrame);
+            if (menuFrame) {
+                setInterval(() => menuFrame.getPageStatus(context.appStatus), 2000, context.appStatus);
+            }
+        },
+        methods: {
+            getPageStatus(){
+                var context = this;
+                var el = document.getElementById('menuFrame');
+                var menuFrame = getIframeWindow(el);
+                if (menuFrame) {                    
+                        menuFrame.getPageStatus(context.appStatus);
+                }
+            },
+            setDummyDataForWindow(frame, useCase){                
+                var iframe = document.getElementById(frame.id);                 
+                var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                iframeDoc.vue.setDummyData(useCase.dummyData);     
+            }
+        }
+    });
+    
+</script>

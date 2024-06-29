@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>StockTech.org</title>
+
+    <meta property="og:title" content="StockTech.org">
+    <meta property="og:image" content="https://stocktech.org/img/my.gif">
+    <meta property="og:type" content="article" />
+    <meta property="fb:app_id" content="1641916685886296" />
+    <meta property="og:description" content="Multiple stock price charts." />
+    <meta property="og:url" content="https://stocktech.org/">
+
+    <link rel="stylesheet" href="./../lib/data-tables/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="../css/mobile.table.css"/>
+    <link rel="stylesheet" href="./../lib/bootstrap/css/bootstrap-icons.css">
+    <link rel="stylesheet" href="../css/mobile.css" />
+        
+    <meta name="format-detection" content="telephone=no" />
+    <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, target-densitydpi=device-dpi,width=device-width, height=device-height" />
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script src="../services/vanilla.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js" asp-append-version="true"></script>
+    <script src="jquery.sparkline.min.js" asp-append-version="true"></script>
+    <script src="./../lib/vue/vue.js"></script>
+    <script src="../symbols.js"></script>
+    <link rel="stylesheet" href="./../lib/bootstrap/css/bootstrap.css" />
+
+    <script type="module" src="./index.js"></script>
+
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM_Placeholder');</script>
+    <!-- End Google Tag Manager -->
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AnalyticsTagPlaceholder"></script>
+    <script src="./../lib/moment/moment.min.js"></script>
+    <script>
+
+        window.setRecentPriceHistory = function (){};
+        window.setProgressStackBars = function (){};
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'AnalyticsTagPlaceholder');
+    </script>
+
+    <script src="./../lib/lightweight-charts/lightweight-charts.standalone.production.js" asp-append-version="true"></script>
+
+    <style>
+        [v-cloak] { display:none; }
+        .mobile-limit{
+            -webkit-backface-visibility: hidden;
+            max-height: 300px;
+        }
+        
+        body.keyboard {
+             height: calc(100% + 500px); /* add padding for keyboard */
+        }
+        
+        .bottom-panel{
+            position: fixed;
+            bottom: 0px;
+            left: 0px;
+            padding: 10px;
+            margin-top: 5px;
+            width: 100%;
+            height: 50px;
+            background: white;
+            -webkit-backface-visibility: hidden;
+        }
+        
+        .size_12{
+            width: 12px;
+            height: 12px;
+        }
+        #progress-bar {
+            width: 100%;
+            height: 30px;
+            background-color: #ccc;
+        }
+        .progress-bar-votes {
+            margin: 3px;
+            width: 100%;
+            height: 30px;
+            border: 1px solid #ccc;
+        }
+
+        #progress {
+            width: 0%;
+            height: 100%;
+            background-color: green;
+            transition: width 1s linear;
+        }
+
+        .progress-yellow {
+            background-color: yellow;
+            color: blue;
+        }
+
+        .progress-green {
+            background-color: darkblue;
+            color: white;
+        }
+
+        .progress-votes {
+            width: 0%;
+            height: 100%;
+            /* background-color: darkgreen; */
+            transition: width 1s linear;
+        }
+
+        .blink {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .full-width{
+            width: 100%;
+        }
+        .voting-selection{
+            border: 1px solid gray;
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .section-title{
+            font-weight: bold;
+            font-size: x-large;
+        }
+
+        td, th{
+            text-align: right;
+        }
+        
+        // Colors
+        .bg-blue{
+            background-color: blue;
+        }
+        .bg-green{
+            background-color: green;
+        }
+        .bg-red{
+            background-color: red;
+        }
+    </style>
+</head>
+<!-- Page content -->
+<body>
+<div id="adminApp">
+    <div :style="'max_-height:'+bodyHeight">
+    <div class="container" :style="'max-width: 100%; max-height: 100%;padding: 0px; margin: 0px; background-color: ' + backgroundColor">
+        <!-- Voting Help Page START -->
+        <div class="row" v-if="!user">
+            <div class="col-12" style="min-width: 80px; text-align: center">
+                <h1>Connecting... <img class="size_40" src="../../img/loading.svg" alt="loading"/></h1>
+            </div>
+        </div>
+
+        <div class="row" v-if="user" v-cloak>
+            <div class="col-12" style="min-width: 80px; text-align: center">
+                <div v-if="connectionLost" class="alert-danger">Check your internet connection</div>
+                <otb-menu-component ref="appMenu" layout="short"></otb-menu-component>
+            </div>
+        </div>
+
+        <div class="row" v-cloak v-if="false && !selectedAlert">
+            <div class="col-12" style="min-width: 80px; text-align: center">
+                <h1 v-on:click="switchSorting()">Recent price History {{ (env != "Prod" ? "("+env+")":"") }}</h1>
+            </div>
+        </div>
+        
+        <!-- {{performanceMessages}} -->
+
+
+        <!-- START OF OBJECTS -->
+
+        <div class="row" v-cloak v-if="orderId && !selectedAlert">
+            <a :href="hrefBack" class="btn col-12 alert-danger" style="min-width: 80px; text-align: center">
+                Alert {{ alertId }} not found in recent alerts.
+            </a>
+        </div>
+
+
+        <div class="row" v-cloak v-if="user && alerts.length">
+
+            
+            <div class="col-12" v-if="!selectedAlert" style="min-width: 67px; text-align: center; padding: 0px">
+                <br>
+                <div class="container-fluid body-content flex-grow mobile-limit-" style="width: 100%; padding: 0px; ">
+
+
+                    <div class="">
+                        Filter
+                        <input v-model="searchText"/>
+                        <span v-if="loadingOrders">
+                             <img class="size_40" src="../../img/loading.svg" alt="loading"/> {{loadingOrders}}
+                        </span>
+                        <br>
+                        <br>
+                    </div>
+
+
+                    <div v-if="false" class="container" sytle="max-width: 95%">
+                        <div class="progress" sytle="max-width: 95%">
+                            <template v-for="(stackBar, index) in stackBars">
+                                <div v-if="stackBar.count" class="progress-bar" role="progressbar" :title="stackBar.name" :style="'background:'+libService.colors[index] +';width:'+parseInt(stackBar.count/stackBarsMax*100)+'%'">
+                                    {{stackBar.name}}
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    
+                    <div class="row" v-if="user" v-cloak>
+                        <div class="col-12" style="min-width: 80px; text-align: center">
+                            <div v-if="!loadingOrders && !alerts.length">
+                                <b>No alerts found</b>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="symbolsLeft > 0">
+                        <!--Loading {{symbolsLeft}} of {{symbols.length}} <img class="size_12" src="../../img/loading.svg" alt="loading"/></span-->
+                        Loading {{symbolsLeft}} <img class="size_12" src="../../img/loading.svg" alt="loading"/>
+                        <br>
+                    </div>
+                    <div v-if="false && appStatusBarText" v-on:click="isComplexView = !isComplexView">
+                        {{appStatusBarText}}
+                        <br>
+                    </div>
+                    
+                    <div class="row">
+
+
+                        
+                        <template v-for="(symbol, index) in symbols">
+                            <table style="border: 1px solid gray; width: 67px; min-width: 67px; max-width: 67px" class="" v-show="index < 200 && isVisible(symbol, searchText)" v-on:click="goToSymbol(symbol)">
+                                <tr >
+                                    <td style="text-align: left; max-width: 30px" v-show="isComplexView">
+                                        <div>
+                                            <span style='color: green; font-weight: bold;' :title="symbol.symbolId" v-on:click="openLink_otb_fn(symbol)">{{ symbol.code }}</span>
+                                            <span class="text-danger small" v-if="symbol.data.length">{{ timeService.timeAgo_otb_fn(symbol.data[symbol.data.length-1][0]) }} ago</span>
+                                            <span v-if="!symbol.loaded">... <img class="size_12" src="../../img/loading.svg" alt="loading"/></span>
+                                        </div>
+                                        <div>
+                                            <span v-if="symbol.ticks"> 
+                                                <div>
+                                                    <span>{{computePercent_otb_fn(symbol.ticks, symbol)}}</span>% in <span class="text-secondary">{{computeDuration_otb_fn(symbol.ticks, symbol.symbolId)}}</span>
+                                                </div>  
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style="position: fixed; float: left; text-shadow: 2px 1px white; ">
+                                            <div style="color: blue; font-weight: normal">{{symbol.code}}</div>
+                                            <div class="text-danger small">{{ timeService.timeAgo_otb_fn(symbol.ago) }}</div>
+                                            <div v-if="!symbol.ticks">{{symbol.symbolId}}</div>
+                                        </div>
+                                        <div style="height:67px; width:61px">
+                                            <span :id="'ch_'+symbol.symbolId+'_1'" > {{ symbol.ticks ? symbol.ticks.length : '?' }} </span>
+                                        </div>
+                                    </td>
+            
+                                </tr>
+                                <tr >    
+                                    <td colspan="4">
+                                        <div>
+                                            <span> <span title="Lats month update" :id="'lum_'+symbol.symbolId" style="color: blue"> </span></span>
+                                            <span> <span title="Lats year update" :id="'luy_'+symbol.symbolId" style="color: green"> </span></span>
+                                        </div>
+                                    </td>
+            
+                                </tr>
+                            </table>
+
+                        </template>
+                    </div>
+                </div>
+                    <div v-if="false && priceFrame">
+                        {{priceFrame[0][2]}}
+                    </div>
+
+                    <br>
+                </div>
+                
+        </div>
+        
+        <!-- END OF OBJECTS -->
+
+        <br>
+        <br>
+
+        <!-- START OF DEBUG -->
+        <div v-if="showDebugMessages" v-cloak v-on:click="isDebug = !isDebug"> . | .
+            <div v-if="isDebug">
+                <div>{{env}}</div>
+                <div v-on:click="getAlerts_otb_fn()">{{backgroundColor}}</div>
+                <div>{{url}}</div>
+                <div v-for="message in debugMessages">{{message}}</div>
+            </div>
+        </div>
+        <br>
+        <!-- END OF DEBUG -->
+        
+        </div>  
+        <!-- END OF CONTAINER -->
+
+    </div>
+    <br>
+    <div v-cloak v-if="false">
+        {{chartsToDraw.length}}
+        <div v-for="(ch, index) in chartsToDraw" v-if="ch.symbolId == debugSymbolId">
+            [{{index}}] S:{{ch.symbolId}} L:{{ ( ch.data ? ch.data.length+'d' : ch.length ) }}
+        </div>
+    </div>
+</div>
+</body>
+
+<script>
+    document.urlParams = new URLSearchParams(window.location.search);
+    var env = document.urlParams.get('env');
+    if(env) {
+        setBackground(env);
+    }
+</script>
+<script>
+    // getPageStatus
+    function getPageStatus_otb_fn(params){
+        return "{ pageStatus: 1 }";
+    }
+    window.getPageStatus_otb_fn = getPageStatus_otb_fn;
+    
+    window.symbolIdsDictionary = {};
+    Object.getOwnPropertyNames(symbolsDictionary).map(p => { return window.symbolIdsDictionary[symbolsDictionary[p]] = p} );
+    
+    var isLocalhost = window.location.host.indexOf("localhost") >= 0;
+    var windowEnv = null;
+    var windowUser = null;
+    var windowSymbol = false && isLocalhost ? {symbolId: 1, code: "CCL"} : null;
+    function setUser(user, env){
+        window.windowUser = user;
+        window.windowEnv = env;
+        return "{ userId: " + window.windowUser.userId+" }";
+    }
+    function setSymbol(symbol){
+        window.windowSymbol = symbol;
+        return "{ symbolId: " + window.windowSymbol.symbolId+" }";
+    }
+    
+    document.body.addEventListener("focus", event => {
+        const target = event.target;
+        switch (target.tagName) {
+            case "INPUT":
+            case "TEXTAREA":
+            case "SELECT":
+                document.isTyping = true;
+                document.seHeight();
+        }
+    }, true);
+    document.body.addEventListener("blur", () => {
+        document.isTyping = false;
+        document.seHeight();
+    }, true);
+
+    $(document).ready(function() {
+        if(isLocalhost) {
+            // setSymbol({symbolId: 10, code: "CCL", price: 10.5});
+        }
+    });
+</script>
+
+<script type = "module">
+    
+</script>
+
+<!-- Page content -->
+</html>

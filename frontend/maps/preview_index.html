@@ -1,0 +1,1225 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>m.StockTech.org</title>
+
+        <meta property="og:title" content="StockTech.org">
+        <meta property="og:image" content="https://stocktech.org/img/my.gif">
+        <meta property="og:type" content="article" />
+        <meta property="fb:app_id" content="1641916685886296" />
+        <meta property="og:description" content="Multiple stock price charts." />
+        <meta property="og:url" content="https://stocktech.org/">
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js" asp-append-version="true"></script>
+        <script src="./lightweight-charts.standalone.prev.js" asp-append-version="true"></script>
+        <script src="https://stocktech.org/lib/vue/vue.js"></script>
+        
+        <!-- Google Tag Manager -->
+        <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM_Placeholder');</script>
+        <!-- End Google Tag Manager -->
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=AnalyticsTagPlaceholder"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'AnalyticsTagPlaceholder');
+        </script>
+        
+        <style>
+        body{
+            background-color: white;
+            color: black;
+            font-size: large;
+            font-weight: bold;
+        }
+        .float-right {
+            float: right;
+        }
+        .btn{
+            border: 1px solid gray;
+            border-radius: 10px;
+            padding: 2px 5px 2px 5px;
+            color: black;
+        }
+        .btn-primary{
+            background-color: orange;
+        }
+        .btn-secondary{
+            background-color: gray;
+        }
+        .code-editor{
+            border: 5px solid gray;
+            border-radius: 10px;
+            display: inline-block;
+            margin: 5px;
+            width: 100%;
+            height: 300px;
+            color: white;;
+            background-color: black;
+        }
+        .code-text:hover{
+            opacity: 1;
+        }
+        .code-text{
+            opacity: 0.1;
+            border: 5px solid #444;
+            border-radius: 10px;
+            display: inline-block;
+            margin: 5px;
+            width: 50%;
+            height: 40px;
+            color: white;;
+            background-color: black;
+        }
+        .center {
+            margin: auto;
+            width: 50%;
+            align-content: center;
+            text-align: center;
+            padding: 10px;
+        }
+        .title{
+            font-size: 32px;
+            font-weight: bold;
+            color: blue;
+            text-decoration: none;
+        }
+        .symbol {
+            border: 5px solid gray;
+            border-radius: 10px;
+            display: inline-block;
+            margin: 5px;
+        }
+        .symbol:hover {
+            border: 5px solid blue;
+        }
+        
+        .footer a{
+            color: gray;
+            font-weight: normal;
+            text-decoration: none;
+        }
+        .footer a:hover{
+            border: 1px solid white;
+            color: white;
+        }
+        .symbolLink{
+            color: white;
+            font-weight: normal;
+            text-decoration: none;
+        }
+        .symbolLink:hover{
+            border: 1px solid white;
+            border-radius: 5px;
+            padding: 5px;
+            color: yellow;
+        }
+        .userWarning{
+            color: red;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 32px;
+            background-color: yellow;            
+        }
+        .footer-link{
+            color: #888;
+            text-decoration: none;
+        }
+        .footer-link:hover{
+            color: #33F;
+            text-decoration: underline;
+        }
+
+
+
+
+        .modal {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.4rem;
+            width: 450px;
+            padding: 1.3rem;
+            min-height: 250px;
+            position: absolute;
+            top: 20%;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            z-index: 2;
+        }
+        .hidden {
+            display: snone;
+        }
+        .modal-content{
+            top: 300px;
+            text-align: center;
+            position: absolute;
+            left: 43%;
+            right: 43%;
+            width: 600px;
+            background-color: black;
+            padding-bottom: 50px;
+            border-radius: 10px;
+        }
+
+        .modal .flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .overlay {
+             position: fixed;
+             top: 0;
+             bottom: 0;
+             left: 0;
+             right: 0;
+             width: 100%;
+             height: 100%;
+             background: rgba(0, 0, 0, 0.5);
+             backdrop-filter: blur(3px);
+             z-index: 1;
+         }
+        </style>
+</head>
+    <body>
+
+    <div id="adminApp">
+
+        <div v-if="showScriptEditor" style="text-align: center; position: absolute; max-width: 500px; top: 100px">
+            <div style="color:#444" v-if="false">Build your own algo</div>
+            <div style="max-width: 900px; text-align: center; display: inline-block;">
+
+
+                <div style="text-align: center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width: 300px;height: auto;" width="160" height="160" viewBox="0 0 1023 1023">
+<defs><mask id="qrmask"><g fill="#ffffff"><g>
+<g transform="translate(310,62) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(372,62) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(403,62) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(496,62) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(589,62) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(620,62) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(310,93) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(341,93) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(403,93) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(434,93) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(465,93) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(496,93) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(527,93) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(589,93) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(682,93) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(310,124) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(403,124) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3V0l6,0V6z"></path></g>
+<g transform="translate(434,124) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(527,124) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3V0l6,0V6z"></path></g>
+<g transform="translate(558,124) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(682,124) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(341,155) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(372,155) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(434,155) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(589,155) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(651,155) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(341,186) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(403,186) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(434,186) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(465,186) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(589,186) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(620,186) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(651,186) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(682,186) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(310,217) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(434,217) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(465,217) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(496,217) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(527,217) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(558,217) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(589,217) scale(5.3216666666667)"><path d="M3,6H0V0l6,0v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(310,248) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(372,248) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(434,248) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(496,248) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(558,248) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(620,248) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(682,248) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(310,279) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(341,279) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(372,279) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(403,279) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(434,279) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(496,279) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(589,279) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(620,279) scale(5.3216666666667)"><path d="M3,6H0V0l6,0v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(682,279) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(124,310) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(155,310) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(186,310) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(248,310) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(310,310) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(372,310) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(434,310) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3V0l6,0V6z"></path></g>
+<g transform="translate(465,310) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(527,310) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(558,310) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(713,310) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(744,310) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(775,310) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(868,310) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(899,310) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(930,310) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(62,341) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(93,341) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(124,341) scale(5.3216666666667)"><path d="M3,6H0V0l6,0v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(217,341) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(279,341) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(496,341) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(527,341) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(558,341) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(589,341) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(620,341) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(651,341) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(682,341) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(713,341) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(744,341) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(775,341) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(806,341) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(837,341) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(930,341) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(62,372) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(186,372) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(217,372) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(248,372) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(279,372) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(310,372) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(341,372) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(465,372) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(496,372) scale(5.3216666666667)"><path d="M3,6H0V0l6,0v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(558,372) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(620,372) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(682,372) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(713,372) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(744,372) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(62,403) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(93,403) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(155,403) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(186,403) scale(5.3216666666667)"><path d="M3,6H0V0l6,0v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(279,403) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(310,403) scale(5.3216666666667)"><path d="M3,6H0V0l6,0v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(372,403) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(527,403) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(589,403) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(651,403) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(682,403) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(713,403) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(744,403) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(775,403) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(837,403) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(899,403) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(62,434) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(124,434) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(155,434) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(248,434) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(279,434) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(341,434) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(372,434) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(496,434) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(558,434) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(589,434) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(620,434) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(651,434) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(682,434) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(713,434) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(775,434) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(868,434) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(899,434) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(930,434) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(93,465) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(155,465) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3V0l6,0V6z"></path></g>
+<g transform="translate(186,465) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(217,465) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(279,465) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(372,465) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3V0l6,0V6z"></path></g>
+<g transform="translate(403,465) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(434,465) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(558,465) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(651,465) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3V0l6,0V6z"></path></g>
+<g transform="translate(682,465) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(713,465) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(744,465) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(806,465) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(837,465) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(930,465) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(62,496) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(217,496) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(248,496) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(279,496) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(310,496) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(341,496) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(434,496) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(465,496) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(527,496) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(620,496) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(682,496) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(744,496) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(775,496) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(62,527) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(155,527) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(186,527) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(217,527) scale(5.3216666666667)"><path d="M3,6H0V0l6,0v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(279,527) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(434,527) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(496,527) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(651,527) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(744,527) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(806,527) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(837,527) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(930,527) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(93,558) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(124,558) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(155,558) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(186,558) scale(5.3216666666667)"><path d="M3,6H0V0l6,0v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(248,558) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(372,558) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(403,558) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(434,558) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(465,558) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(527,558) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(620,558) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(837,558) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(868,558) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(899,558) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(930,558) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(62,589) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(93,589) scale(5.3216666666667)"><path d="M3,6H0V0l6,0v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(217,589) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(279,589) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(310,589) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(341,589) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(465,589) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3V0l6,0V6z"></path></g>
+<g transform="translate(496,589) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(558,589) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(620,589) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3V0l6,0V6z"></path></g>
+<g transform="translate(651,589) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(744,589) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(806,589) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(837,589) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(899,589) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3V0l6,0V6z"></path></g>
+<g transform="translate(930,589) scale(5.3216666666667)"><path d="M3,6H0V0l6,0v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(62,620) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(124,620) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(248,620) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(310,620) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(372,620) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(403,620) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(434,620) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(589,620) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(682,620) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(744,620) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(806,620) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3V0l6,0V6z"></path></g>
+<g transform="translate(837,620) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(62,651) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(217,651) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(279,651) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(527,651) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(558,651) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(620,651) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(651,651) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(682,651) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(744,651) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(837,651) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(930,651) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(62,682) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(124,682) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(155,682) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(186,682) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(248,682) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(279,682) scale(5.3216666666667)"><path d="M3,6H0V0l6,0v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(341,682) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(372,682) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(527,682) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(558,682) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(589,682) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(620,682) scale(5.3216666666667)"><path d="M3,6H0V0l6,0v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(682,682) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(713,682) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(744,682) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(775,682) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(806,682) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(868,682) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(310,713) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(341,713) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(372,713) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(434,713) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(465,713) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(527,713) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(589,713) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(651,713) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(682,713) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(806,713) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(837,713) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(899,713) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(930,713) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(341,744) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(372,744) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(403,744) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(434,744) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(465,744) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(496,744) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(527,744) scale(5.3216666666667)"><path d="M3,6H0V0l6,0v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(589,744) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3V0l6,0V6z"></path></g>
+<g transform="translate(620,744) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(651,744) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(682,744) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(744,744) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(806,744) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(341,775) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(434,775) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(465,775) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(496,775) scale(5.3216666666667)"><path d="M3,6H0V0l6,0v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(558,775) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(651,775) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3V0l6,0V6z"></path></g>
+<g transform="translate(682,775) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(806,775) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(837,775) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(930,775) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+<g transform="translate(310,806) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3h0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(372,806) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(403,806) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(434,806) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(465,806) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(682,806) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(713,806) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(744,806) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(775,806) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(806,806) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(837,806) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(868,806) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(899,806) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(310,837) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(372,837) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(403,837) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(434,837) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(465,837) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(496,837) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(527,837) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(558,837) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(589,837) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(651,837) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(682,837) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(713,837) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(775,837) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(310,868) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3V0l6,0V6z"></path></g>
+<g transform="translate(341,868) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(372,868) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(527,868) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(589,868) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(651,868) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3V0l6,0V6z"></path></g>
+<g transform="translate(682,868) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(713,868) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(744,868) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(775,868) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(806,868) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(837,868) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(868,868) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(899,868) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(372,899) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(434,899) scale(5.3216666666667)"><path d="M6,6H0V3c0-1.7,1.3-3,3-3l3,0V6z"></path></g>
+<g transform="translate(465,899) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(589,899) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3V0l6,0V6z"></path></g>
+<g transform="translate(620,899) scale(5.3216666666667)"><path d="M6,6H0V0l3,0c1.7,0,3,1.3,3,3V6z"></path></g>
+<g transform="translate(682,899) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3V0l6,0V6z"></path></g>
+<g transform="translate(713,899) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(806,899) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(837,899) scale(5.3216666666667)"><path d="M3,6H0V0l6,0v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(899,899) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(341,930) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(372,930) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(403,930) scale(5.3216666666667)"><rect width="6" height="6"></rect></g>
+<g transform="translate(434,930) scale(5.3216666666667)"><path d="M3,6H0V0l6,0v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(496,930) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3v0c0-1.7,1.3-3,3-3h3C6,0,6,6,6,6z"></path></g>
+<g transform="translate(527,930) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(620,930) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3V0l6,0V6z"></path></g>
+<g transform="translate(651,930) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(713,930) scale(5.3216666666667)"><path d="M6,6H3C1.3,6,0,4.7,0,3V0l6,0V6z"></path></g>
+<g transform="translate(744,930) scale(5.3216666666667)"><path d="M3,6H0V0l3,0c1.7,0,3,1.3,3,3v0C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(806,930) scale(5.3216666666667)"><path d="M3,6L3,6C1.3,6,0,4.7,0,3V0h6v3C6,4.7,4.7,6,3,6z"></path></g>
+<g transform="translate(868,930) scale(5.3216666666667)"><circle cx="3" cy="3" r="3"></circle></g>
+</g></g></mask></defs>
+                        <rect width="1023" height="1023" fill="#ffffff" x="0" y="0"></rect>
+                        <rect x="0" y="0" width="1023" height="1023" mask="url(#qrmask)" fill="#060061"></rect>
+                        <g><g transform="translate(62,62)" fill="#04087c"><g transform="scale(15.5)"><path d="M14,14V4.4C14,2,12,0,9.6,0H4.4C2,0,0,2,0,4.4v5.1C0,12,2,14,4.4,14H14z M4.8,2h4.4C10.7,2,12,3.3,12,4.8V12H4.8 C3.3,12,2,10.7,2,9.2V4.8C2,3.3,3.3,2,4.8,2z"></path></g></g>
+                            <g transform="translate(124,124)" fill="#000000"><g transform="scale(15.5)"><path d="M6,1.7v2.7C6,5.2,5.2,6,4.3,6H1.7C0.7,6,0,5.3,0,4.3V1.7C0,0.8,0.8,0,1.7,0h2.7C5.3,0,6,0.7,6,1.7z"></path></g></g>
+                            <g transform="translate(744,62)" fill="#04087c"><g transform="scale(15.5) rotate(90 7 7)"><path d="M14,14V4.4C14,2,12,0,9.6,0H4.4C2,0,0,2,0,4.4v5.1C0,12,2,14,4.4,14H14z M4.8,2h4.4C10.7,2,12,3.3,12,4.8V12H4.8 C3.3,12,2,10.7,2,9.2V4.8C2,3.3,3.3,2,4.8,2z"></path></g></g>
+                            <g transform="translate(806,124)" fill="#000000"><g transform="scale(15.5)"><path d="M6,1.7v2.7C6,5.2,5.2,6,4.3,6H1.7C0.7,6,0,5.3,0,4.3V1.7C0,0.8,0.8,0,1.7,0h2.7C5.3,0,6,0.7,6,1.7z"></path></g></g>
+                            <g transform="translate(62,744)" fill="#04087c"><g transform="scale(15.5) rotate(-90 7 7)"><path d="M14,14V4.4C14,2,12,0,9.6,0H4.4C2,0,0,2,0,4.4v5.1C0,12,2,14,4.4,14H14z M4.8,2h4.4C10.7,2,12,3.3,12,4.8V12H4.8 C3.3,12,2,10.7,2,9.2V4.8C2,3.3,3.3,2,4.8,2z"></path></g></g>
+                            <g transform="translate(124,806)" fill="#000000"><g transform="scale(15.5)"><path d="M6,1.7v2.7C6,5.2,5.2,6,4.3,6H1.7C0.7,6,0,5.3,0,4.3V1.7C0,0.8,0.8,0,1.7,0h2.7C5.3,0,6,0.7,6,1.7z"></path></g></g></g>
+</svg>
+                    <br>
+                    <a target="_blank" href="https://play.google.com/store/apps/details?id=org.stocktech.otb"><div class="btn btn-primary" style="max-width: 200px; display: inline-block;">Download APP</div></a>
+                </div>
+                
+                            <div v-if="false" style="text-align: center;" :style="highlightLogin ? 'border: 1px solid white;':''" v-if="showLoginForm">
+                                <br>
+                                <hr>
+                                <br>
+                                <br>
+                                <br>
+                                <div style="font-weight: bold; font-size: x-large">Want more charts?</div>
+                                <div ><span v-if="false">Enter your email:</span> <div>
+                                    <input
+                                            v-model="email"
+                                            :placeholder="showLoginPlaceholder?' Your email here':''"
+                                            v-on:click="showLoginPlaceholder = false"
+                                            v-on:keyup="checkEmail()"
+                                            v-on:keyup.enter="sendLogin()"
+                                            style="padding: 10px 0px 10px 0px;  width: 400px; font-weight: bold; font-size: xx-large; color: #0b2e13; border-radius: 10px 10px 0px 0px" />
+                                    <input
+                                            v-if="showPassword"
+                                            v-model="password"
+                                            type="password"
+                                            v-on:keyup="userMessage ='Login'; userMessageColor= 'orange'; showPasswordPlaceholder = !password"
+                                            :placeholder="showPasswordPlaceholder?' Type your password':''"
+                                            v-on:click="showPasswordPlaceholder = false"
+                                            v-on:keyup.enter="sendLogin()"
+                                            style="padding: 10px 0px 10px 0px; margin: 3px; width: 400px; font-weight: bold; font-size: xx-large; color: #0b2e13; border-radius: 0px 0px 0px 0px" />
+
+                                    <div v-if="!userConfirmed && !showPassword">
+                                        <div v-if="!privacyAgreement" style="width: 400px;  border: 0px solid gray; padding: 5px; border-radius: 0px; display: inline-block;" v-on:click="removeErrors()">
+                                            <div class="green"  v-if="false">New to our site?</div>
+                                            <input id="SL_chk_Privacy_Agreement" name="PrivacyAgreement" type="checkbox"
+                                                   v-model='privacyAgreement' />
+                                            <label for="PrivacyAgreement">I agree with the <a style="color: blue" href="https://stocktech.org/docs/PrivacyPolicy.html">Privacy Agreement</a></label>
+                                        </div>
+                                        <div v-else>
+                                            <input id="SL_chk_Privacy_Agreement" name="PrivacyAgreement" type="checkbox"  v-model='privacyAgreement'  />
+                                            <label for="PrivacyAgreement">I agree with the <a style="color: blue" href="https://stocktech.org/docs/PrivacyPolicy.html">Privacy Agreement</a></label>
+                                        </div>
+                                        <div class="" v-if="email && response.userMessages.length" style="padding: 5px; font-weight: bold;border: 1px solid; border-radius: 10px;">
+                                            <br>
+                                            <div v-for="message in response.userMessages" v-html="message"></div>
+                                            <br>
+                                        </div>
+                                    </div>
+
+                                    <div class="btn "
+                                         style="width: 398px; display: inline-block; border-radius: 0px 0px 10px 10px"
+                                         :style="'background-color: '+userMessageColor"
+                                         v-on:click="sendRegistration()">{{ userMessage }}</div>
+                                </div></div>
+                                <div><br>
+                                    <div style="font-weight: normal; " v-if="false">Scan the code for the mobile app to unlock more charts.</div>
+                                    <textarea v-if="false" id="script-editor" v-model="scriptCode" class="code-editor" v-on:keyup="evaluateCode()"></textarea>
+                                </div>
+                            </div>
+
+
+                            <div style="text-align: center;" :style="highlightLogin ? 'border: 1px solid white;':''" v-if="!showLoginForm">
+                                <br>
+                                <hr>
+                                <br>
+                                <br>
+                                <br>
+                                <div style="font-size: xx-large; color: gray">Welcome to StockTech</div>
+                                <div ><span >{{user.email}}</span> <div>
+                                    <br>
+                                    <span class="btn" style="background-color: cornflowerblue; padding: 10px 5px 10px 5px" v-on:click="sendLogout()">Log-out</span>
+                                </div>
+                                </div>
+                                <br>
+                                <br>
+                                <br>
+                            </div>
+
+
+                <br>
+                <br>
+                            <div style="text-align: center; border: 1px solid gray; padding: 10px;">
+                                <div v-if="qr.value" style="; " v-on:click="generateQrLogin()">
+                                    <div v-if="timeLeft <= 0" style="height: 180px; width: 180px; vertical-align: center; display: inline-block">
+                                        <div v-if="this.userConfirmed" v-on:click="generateQrLogin()"> Click to regenerate<br><br><br><span style="color: #555">Mobile APP<br>login QR</span></div>
+                                    </div>
+                                    <div v-else style="background-color: white; padding: 10px;">
+                                        <qrcode-vue class="qrcode" :value="qr.value" :renderAs="qr.renderAs" :size="qr.size" :level="qr.level" :background="qr.background" :foreground="qr.foreground"/>
+                                    </div>
+                                    <div v-if="timeLeft > 0" style="color: #555">{{timeLeft}}</div>
+                                </div>
+                                <div v-else style=" color: #555">
+                                    <div v-if="this.userConfirmed" v-on:click="generateQrLogin()" style="background-color: orange; color: black; padding: 10px"> Click to generate <br> mobile APP login</div>
+                                    <div v-else v-on:click="highlightLogin = !highlightLogin; showModal = true">Login or register<br> to enable mobile login</div>
+                                </div>
+                                <div v-if="qr.value" class="btn btn-primary" style="max-width: 200px; display: inline-block;">APP login</div>
+                            </div>
+                <br>
+                <hr>
+
+                <div style="color: #888">
+                    <a class="footer-link" href="?" id="SL_txt_ContactLink">Home</a> |
+                    <a class="footer-link" href="?view=GDPR" id="SL_txt_ContactLink">User Agreement</a> |
+                    <a class="footer-link" href="?view=Support">Contact</a> 
+                </div>
+                
+            </div>
+            <br>
+            <br>
+        </div>
+        
+        <div class="center">
+        <div>
+            <a  class="title" href="https://stocktech.org" >StockTech.org</a>
+            <span class="float-right" :class="showScriptEditor?'btn btn-primary':'btn btn-secondary'" v-on:click="showScriptEditor = !showScriptEditor">Code</span>
+        </div>
+        <br><hr style="border: 1px dashed #444;"><br>
+        <div v-if="userWarning" class="userWarning">{{userWarning}}</div>
+    <div id="chart_area"><a :href="'https://www.google.co.uk/search?q='+selectedSymbol.code+'+shaere+price'" target="_blank" class="symbolLink">{{selectedSymbol.code}}</a></div>
+        <br>
+    <div v-else-if="false">
+        <span  class="code-text" v-on:click="showScriptEditor = !showScriptEditor">Plot this expression:  <div>{{scriptCode}}</div></span>
+    </div>
+    <div style="color:#444">Stock explorer</div>
+        <template v-for="(symbol, index) in symbols" >
+            <span class="symbol">
+                <span @mouseenter="previewSymbol(symbol)" v-on:click="selectSymbol(symbol)"> <span id="chart_legend_0">
+                    <a :href="'https://www.google.co.uk/search?q='+symbol.code+'+shaere+price'" target="_blank" class="symbolLink">{{symbol.code}}</a></span> <span :id="'chart_area_'+index"></span> </span>
+            </span>
+            <span v-if="index-2 % 3 === 0"> <br></span>
+        </template>
+    
+        <div class="footer">
+            <br><hr style="border: 1px dashed #444;"><br>
+            <a href="https://stocktech.org">Home</a>
+            <a href="https://stocktech.org/docs/PrivacyPolicy.html">Privacy Policy</a>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+<section class="modal hidden" v-if="showModal"><div class="overlay hidden">
+    <div class="modal-content" style="text-align: center; color: white" :style="highlightLogin ? 'border: 1px solid white;':''" v-if="showLoginForm">
+
+        <div v-on:click="showModal = false" style="float: right; ">Close</div>
+        <br>
+        <div style="font-weight: bold; font-size: x-large">Want more charts?</div>
+        <div style="font-size: xx-large; color: gray">Enter your email</div>
+        <div ><span v-if="false">Enter your email:</span> <div>
+            <input
+                    v-model="email"
+                    :placeholder="showLoginPlaceholder?' Your email here':''"
+                    v-on:click="showLoginPlaceholder = false"
+                    v-on:keyup="checkEmail()"
+                    v-on:keyup.enter="sendLogin()"
+                    style="padding: 10px 0px 10px 0px;  width: 400px; font-weight: bold; font-size: xx-large; color: #0b2e13; border-radius: 10px 10px 0px 0px" />
+            <input
+                    v-if="showPassword"
+                    v-model="password"
+                    type="password"
+                    v-on:keyup="userMessage ='Login'; userMessageColor= 'orange'; showPasswordPlaceholder = !password"
+                    :placeholder="showPasswordPlaceholder?' Type your password':''"
+                    v-on:click="showPasswordPlaceholder = false"
+                    v-on:keyup.enter="sendLogin()"
+                    style="padding: 10px 0px 10px 0px; margin: 3px; width: 400px; font-weight: bold; font-size: xx-large; color: #0b2e13; border-radius: 0px 0px 0px 0px" />
+
+            <div v-if="!userConfirmed && !showPassword">
+                <div v-if="!privacyAgreement" style="width: 400px;  border: 0px solid gray; padding: 5px; border-radius: 0px; display: inline-block;" v-on:click="removeErrors()">
+                    <div class="green"  v-if="false">New to our site?</div>
+                    <input id="SL_chk_Privacy_Agreement" name="PrivacyAgreement" type="checkbox"
+                           v-model='privacyAgreement' />
+                    <label for="PrivacyAgreement">I agree with the <a style="color: orange" href="https://stocktech.org/docs/PrivacyPolicy.html">Privacy Agreement</a></label>
+                </div>
+                <div v-else>
+                    <input id="SL_chk_Privacy_Agreement" name="PrivacyAgreement" type="checkbox"  v-model='privacyAgreement'  />
+                    <label for="PrivacyAgreement">I agree with the <a style="color: orange" href="https://stocktech.org/docs/PrivacyPolicy.html">Privacy Agreement</a></label>
+                </div>
+                <div class="" v-if="email && response.userMessages.length" style="padding: 5px; font-weight: bold;border: 1px solid; border-radius: 10px;">
+                    <br>
+                    <div v-for="message in response.userMessages" v-html="message"></div>
+                    <br>
+                </div>
+            </div>
+
+            <div class="btn "
+                 style="width: 398px; display: inline-block; border-radius: 0px 0px 10px 10px"
+                 :style="'background-color: '+userMessageColor"
+                 v-on:click="sendRegistration()">{{ userMessage }}</div>
+        </div></div>
+    </div>
+    </div>
+
+
+    <div style="text-align: center;" :style="highlightLogin ? 'border: 1px solid white;':''" v-if="!showLoginForm">
+
+        <div style="font-size: xx-large; color: gray">Welcome to StockTech</div>
+        <div ><span >{{user.email}}</span> <div>
+            <br>
+            <span class="btn" style="background-color: cornflowerblue; padding: 10px 5px 10px 5px" v-on:click="sendLogout()">Log-out</span>
+        </div>
+        </div>
+    </div>
+</section>
+
+
+
+
+
+
+
+
+    </div>
+    </body>
+<script type = "module">
+
+    import QrcodeVue from "../lib/qrcode.vue/qrcode.vue.esm.js";
+
+    $( document ).ready(function() {
+
+        healthcheck();
+/*
+        QRCode.toCanvas(document.getElementById('qr-canvas'), 'test', function (error) {
+            if (error) console.error(error)
+            console.log('success!');
+        })*/
+    });
+
+    var symbols = [];
+    var symbol = {}; // Script variable placeholder
+
+    function healthcheck() {
+        $.ajax("https://stocktech.org:5000/api/public/0/status").done(function (data) { });
+    }
+
+    function plot(symbolId, expression) {
+        var symbol = symbols.find(p=>p.symbolId == symbolId);
+        var minTime = symbol.ticks.map(p=>p[0]);
+        minTime = Math.min(...minTime);
+        var lineValues = [{time: 0, value: expression}, {time: symbol.ticks[symbol.ticks.length -1][0], value: expression}];
+        if(symbol.generatedLines){
+            symbol.generatedLines.forEach(line => {
+                symbol.chart.removeSeries(line);
+            });
+        }
+        symbol.generatedLines = [];
+        var newLine = symbol.chart.addLineSeries({
+            price: expression,
+            color: 'blue',
+            lineWidth: 1,
+            axisLabelVisible: false,
+        });
+        newLine.setData(lineValues);
+        symbol.generatedLines.push(newLine);
+        symbol.chart.timeScale().fitContent();
+    }
+
+    function percent(symbolId, percent, property) {
+        var symbol = symbols.find(p=>p.symbolId == symbolId);
+        var value = symbol.ticks[symbol.ticks.length -1][1];
+        return value * (1+percent/100);
+    }
+
+    function turnSmaToArray(data) {
+        var ticks = [];
+        var dataTicks = data;
+        Object.keys(data).forEach((key, value) => {
+            ticks.push({ time: dataTicks[key][0] / 1000, value: dataTicks[key][1][0] });
+        });
+        return ticks;
+    }
+
+    function turnToArray(data) {
+        var ticks = [];
+        var dataTicks = data;
+        Object.keys(data).forEach((key, value) => {
+            ticks.push({ time: dataTicks[key][0] / 1000, value: dataTicks[key][1] });
+        });
+        return ticks;
+    }
+
+
+    let parent = new Vue({
+        el: "#adminApp",
+        components: {QrcodeVue},
+        props: [],
+        data() {
+            return {
+                // 
+                qr: {
+                    value: null,
+                    size: 160,
+                    level: 'L',
+                    background: '#ffffff',
+                    foreground: '#000000',
+                    renderAs: 'svg',
+                },
+                // Login 
+                showLoginPlaceholder: true,
+                showPasswordPlaceholder: true,
+                email: null,
+                privacyAgreement: false,
+                host: (window.location.host.indexOf("localhost") >= 0 ? "local": null),
+                timeout: 10,
+                confirmationChecks: 900,
+                loginIntervalHandler: null,
+                response: {userMessages:[]},
+                userMessage: 'Enter your email',
+                userMessageColor: 'orange',
+                userConfirmed: false,
+                highlightLogin: false,
+                qrTimestamp: 0,
+                timeLeft: 0,
+                showPassword: false,
+                password: null,
+                user: null,
+                showModal: false,
+                
+                // Script Editor
+                showScriptEditor: true,
+                showLoginForm: true,
+                scriptCode: "plot(percent(1.5))",
+                // Basic
+                width: 1000,
+                userWarning: null,
+                JWT: null,
+                chart: null,
+                selectedSymbol: {},
+                price_series: null,
+                data: {"17":[[1670339293980,[9.513333333333334]],[1670339364480,[9.498333333333333]],[1670339369640,[9.49]],[1670340999120,[9.468333333333334]],[1670342185620,[9.44]],[1670342465220,[9.406666666666666]],[1670343378300,[9.385]],[1670343443760,[9.373333333333335]],[1670344467540,[9.386666666666668]],[1670345765880,[9.361666666666666]],[1670346292980,[9.346666666666666]],[1670346961260,[9.306666666666667]],[1670346985080,[9.303333333333333]],[1670347138260,[9.286666666666667]],[1670348080680,[9.283333333333333]],[1670348156460,[9.278333333333334]],[1670348493000,[9.274999999999999]],[1670348864520,[9.263333333333334]],[1670349819780,[9.231666666666667]],[1670350145820,[9.205]],[1670350581420,[9.198333333333332]],[1670351265240,[9.209999999999999]],[1670352214080,[9.225]],[1670353129320,[9.214999999999998]],[1670353577400,[9.208333333333334]],[1670353632120,[9.191666666666666]],[1670353882680,[9.19]],[1670355607080,[9.208333333333334]],[1670356333620,[9.25]],[1670356544100,[9.283333333333333]],[1670356566120,[9.298333333333334]],[1670357044980,[9.308333333333332]],[1670357167800,[9.321666666666667]],[1670358265500,[9.313333333333334]],[1670358347640,[9.295]],[1670358595080,[9.266666666666667]],[1670358873180,[9.263333333333334]],[1670359073220,[9.26]],[1670359241580,[9.266666666666666]],[1670359342140,[9.273333333333333]],[1670359557600,[9.281666666666666]],[1670359860540,[9.293333333333335]],[1670360164920,[9.296666666666667]],[1670418130320,[9.263333333333334]],[1670423368200,[9.243333333333332]],[1670423521740,[9.196666666666665]],[1670423603640,[9.186666666666666]],[1670423756400,[9.17]],[1670423779560,[9.193333333333333]],[1670424036180,[9.235000000000001]],[1670424142140,[9.285000000000002]],[1670424332340,[9.325]],[1670424391260,[9.33]],[1670424494760,[9.305]],[1670424755400,[9.278333333333334]],[1670424802320,[9.25]],[1670424966600,[9.22]],[1670425050000,[9.195]],[1670425179060,[9.171666666666667]],[1670425582980,[9.126666666666667]],[1670425783080,[9.088333333333333]],[1670425870860,[9.06]],[1670425887060,[9.066666666666668]],[1670425957440,[9.061666666666667]],[1670425976160,[9.063333333333333]],[1670426061060,[9.075]],[1670426535420,[9.078333333333333]],[1670426619240,[9.053333333333335]],[1670426947920,[9.011666666666667]],[1670427334440,[9.01]],[1670428652700,[9.028333333333334]],[1670428839720,[9.065]],[1670429165400,[9.098333333333333]],[1670429447040,[9.123333333333333]],[1670429834700,[9.13]],[1670430569100,[9.079999999999998]],[1670432040540,[9.043333333333331]],[1670432821140,[8.995]],[1670433587940,[8.988333333333335]],[1670433791580,[8.975]],[1670434140120,[8.96]],[1670434152360,[8.938333333333334]],[1670434723800,[8.909999999999998]],[1670434888440,[8.906666666666668]],[1670435987400,[8.928333333333335]],[1670437269960,[8.969999999999999]],[1670438472960,[9.001666666666667]],[1670438617380,[9.005]],[1670438936580,[8.991666666666667]],[1670439590460,[8.963333333333333]],[1670440860720,[8.946666666666667]],[1670441293500,[8.94]],[1670442090360,[8.953333333333333]],[1670445065100,[8.948333333333332]],[1670445710100,[8.950000000000001]],[1670445946320,[8.936666666666667]],[1670446524780,[8.918333333333335]],[1670446548120,[8.895000000000001]],[1670446583580,[8.885]],[1670446691640,[8.885]]]},
+                symbols: [
+                    {
+                        code: "BA",
+                        symbolId: 1,
+                        isMouseOver: false,
+                    },
+                    {
+                        code: "TESLA",
+                        symbolId: 3,
+                        isMouseOver: false,
+                    },
+                    {
+                        code: "KO",
+                        symbolId: 5,
+                        isMouseOver: false,
+                    },
+                    {
+                        code: "AMD",
+                        symbolId: 7,
+                        isMouseOver: false,
+                    },
+                    {
+                        code: "MSFT",
+                        symbolId: 16,
+                        isMouseOver: false,
+                    },
+                    {
+                        code: "CCL",
+                        symbolId: 17,
+                        isMouseOver: false,
+                    },
+                ],
+            }
+        },
+        mounted(){
+            this.loadPriceHistory();
+            setInterval(this.computeTimeLeft, 1000); 
+        },
+        computed:{
+        },
+        methods:{
+
+            computeTimeLeft() {
+                this.timeLeft =  this.qrTimestamp > 0 ? 6 - parseInt((Date.now() - this.qrTimestamp)/1000): 0;
+            },
+            // Login
+            removeErrors(){
+                this.userMessage = this.email ? 'Create free account' : 'Enter your email';
+                this.userMessageColor = 'orange';
+                this.privacyAgreement = true;
+            },
+            checkEmail(){
+                var context = this;
+                this.userMessage ='Create free account'; this.userMessageColor= 'orange';
+                
+                var domain = window.location.host.indexOf("localhost") >= 0 ? "localhost:5000" : "stocktech.org:5000";
+                var resolvedEndpoint = "https://" + domain + "/api/otb/secure/lookup/email";
+                var model = {"env":"Prod","email":this.email,"privacyAgreement":this.privacyAgreement,"isTesting":false,"view":"API", host: this.host}
+
+                $.ajax({
+                    url: resolvedEndpoint,
+                    type: 'POST',
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    data: JSON.stringify(model),
+                    success: function(json){
+                        if(json){
+                            context.showPassword = true;
+                            context.privacyAgreement = true;
+                            context.userMessage = "Login"
+                        }
+                    },
+                }).fail(function(xhr, status, error) {
+                    context.userWarning = "Unable to contact server.";
+                });
+            },
+            sendRegistration(){
+                if(this.password){
+                    this.sendLogin();
+                    return;
+                }
+                var context = this;
+                if(!this.privacyAgreement){
+                    this.userMessage ='Privacy Agreement is needed.';
+                    this.userMessageColor ='#F07030';
+                    return;
+                }
+                if(!this.email){
+                    this.userMessage ='Enter your email';
+                    this.userMessageColor ='#F07030';
+                    return;
+                }
+                if(this.email.indexOf('@') < 0 || this.email.indexOf('.') < 0 || this.email.indexOf('@') > this.email.indexOf('.') || this.email.indexOf('.')+1 == this.email.length){
+                    this.userMessage ='Email is invalid';
+                    this.userMessageColor ='#F07030';
+                    return;
+                }
+                this.timeout = 10;
+                this.confirmationChecks = 900;
+                this.response.userMessages = ["Check your email for activation link."];
+                this.userMessage = "Check your email";
+                if(this.loginIntervalHandler){
+                    clearInterval(this.loginIntervalHandler);
+                }
+                this.loginIntervalHandler = setInterval(context.registrationCheck, 1000);
+                
+                var domain = window.location.host.indexOf("localhost") >= 0 ? "localhost:5000" : "stocktech.org:5000";
+                var resolvedEndpoint = "https://" + domain + "/api/otb/secure/Register";
+                var model = {"env":"Prod","email":this.email,"privacyAgreement":this.privacyAgreement,"isTesting":false,"view":"API", host: this.host}
+
+                $.ajax({
+                    url: resolvedEndpoint,
+                    type: 'POST',
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    data: JSON.stringify(model),
+                    success: function(json){
+
+                    },
+                }).fail(function(xhr, status, error) {
+                    context.userWarning = "Unable to contact server.";
+                });
+            },
+            sendLogin(){
+                var context = this;
+
+                var domain = window.location.host.indexOf("localhost") >= 0 ? "localhost:5000" : "stocktech.org:5000";
+                var resolvedEndpoint = "https://" + domain + "/api/otb/secure/Login";
+                var model = {"env":"Prod","email":this.email,"password":this.password,"isTesting":false}
+
+                $.ajax({
+                    url: resolvedEndpoint,
+                    type: 'POST',
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    data: JSON.stringify(model),
+                    success: function(json){
+                        context.user = json.object;
+                        context.user.user = null;
+                        // this.$parent.getSubscriptionInfo();
+                        context.saveUser(context.user);
+                        context.userConfirmed = true;
+                        context.showLoginForm = false;
+                        context.password = null;
+                        context.showPasswordPlaceholder = true;
+                    },
+                }).fail(function(xhr, status, error) {
+                    context.userWarning = "Unable to contact server.";
+                });
+            },
+            sendLogout(){
+                this.user = null;
+                this.showLoginForm = true;
+                this.userConfirmed = false;
+                localStorage.removeItem("user");
+            },
+            saveUser(user) {
+                localStorage.setItem("user", JSON.stringify({
+                    userId: user.userId,
+                    email: user.email,
+                    token: user.token,
+                    jwt: user.jwt,
+                }));
+                localStorage.setItem("env", JSON.stringify({ id: 1 , name: 'Prod'}) );
+            },
+            registrationCheck(){
+                this.confirmationChecks--;
+                if(this.confirmationChecks < 0){
+                    return;
+                }
+
+                var domain = window.location.host.indexOf("localhost") >= 0 ? "localhost:5000" : "stocktech.org:5000";
+                var resolvedEndpoint = "https://" + domain + "/api/otb/secure/RegistrationCheck";
+                var model = {"env":"Prod","email":this.email,"isTesting":false,"view":"API", host: this.host}
+
+                var context = this;
+                $.ajax({
+                    url: resolvedEndpoint,
+                    type: 'POST',
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    data: JSON.stringify(model),
+                    success: function(json){
+                        if(!json.userInstructions){
+                            return;
+                        }
+                        if(json.userInstructions[0] == "User is confirmed") {
+                            // context.userConfirmed = true;
+                            if(json.object.loginToken == "IP changed"){
+                                context.qr.status = json.object.loginToken;
+                            }
+                            else{
+                                context.qr.value = json.object.loginToken;
+                                context.qrTimestamp = Date.now();
+                                context.computeTimeLeft();
+                            }
+                            context.confirmationChecks = -1;
+                            context.userMessage = "Welcome to StockTech";
+                            context.userMessageColor = "lemon";
+                        }
+                    },
+                }).fail(function(xhr, status, error) {
+                    context.userWarning = "Unable to contact server.";
+                });
+            },
+
+            generateQrLogin() {
+                var context = this;
+                
+                var domain = window.location.host.indexOf("localhost") >= 0 ? "localhost:5000" : "stocktech.org:5000";
+                var resolvedEndpoint = "https://" + domain + "/api/otb/secure/Prod/Flo/generateQrLogin";
+                var model = {"env": "Prod", "email": this.email, "isTesting": false, "view": "API", host: this.host}
+
+                $.ajax({
+                    url: resolvedEndpoint,
+                    type: 'POST',
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    data: JSON.stringify(model),
+                    success: function (json) {
+                        if (!json.userInstructions) {
+                            return;
+                        }
+                        if (json.userInstructions[0] == "User is confirmed") {
+                            if(json.object.loginToken == "IP changed"){
+                                context.qr.status = json.object.loginToken;
+                            }
+                            else{
+                                context.qr.value = json.object.loginToken;
+                                context.qrTimestamp = Date.now();
+                                context.computeTimeLeft();
+                            }
+                        }
+                    },
+                }).fail(function (xhr, status, error) {
+                    context.userWarning = "Unable to contact server.";
+                });
+            },
+            
+            // Others
+            evaluateCode(){
+                symbols.forEach((symbol, index) => {
+                    var result = eval(this.scriptCode
+                        .replace('plot(', 'plot(' + symbol.symbolId + ', ')
+                        .replace('percent(', 'percent(' + symbol.symbolId + ', ')
+                        // .replace('symbol', symbol.symbolId + ', "price"')
+                    );
+                });
+            },
+            
+            createCharts(){
+                this.symbols.forEach((symbol, index) => {
+                    this.createChart(symbol, index);
+                });
+            },
+            createChart(symbol, index){
+                this.width = $('#chart_area')[0].parentElement.scrollWidth;
+                var width = (this.width/3 -40);
+                if(width < 200){
+                    width = 200;
+                }
+                symbol.chart = LightweightCharts.createChart(($('#chart_area_' + index)[0]), { width: width, height: 300, backgroundColor: "gray" });
+                var symbolO = symbols.find(p=>p.symbolId == symbol.symbolId);
+                symbolO.chart = symbol.chart;
+                symbol.price_series = symbol.chart.addLineSeries();
+                if(!symbol.price_series_data) {
+                    symbol.price_series_data = turnSmaToArray(this.data[17]);
+                    symbol.price_series_data.forEach(p => p.value = p.value * (1 + index));
+                }
+                symbol.price_series.setData(symbol.price_series_data);
+                symbol.chart.timeScale().fitContent();
+            },
+            previewSymbol(symbol){
+                this.price_series.setData(symbol.price_series_data);
+                this.chart.timeScale().fitContent();
+                this.selectedSymbol = symbol;
+            },
+            selectSymbol(symbol){
+                this.price_series.setData(symbol.price_series_data);
+                this.chart.timeScale().fitContent();
+                this.selectedSymbol = symbol;
+            },
+            setHeader_otb_fn(header){
+                this.header = header;
+                if(this.$refs.AdminPerformance){
+                    this.$refs.AdminPerformance.setHeader_otb_fn(this.header);
+                }
+            },
+            loadPriceHistory() {
+                var context = this;
+                $.ajax({
+                    url: "https://stocktech.org:5000/api/public/1/preview/recent_price_history",
+                    type: 'GET',
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    success: function(json){
+                        symbols = [];
+                        symbols.push({symbolId: 1, ticks: json[1]});
+                        symbols.push({symbolId: 3, ticks: json[3]});
+                        symbols.push({symbolId: 5, ticks: json[5]});
+                        symbols.push({symbolId: 7, ticks: json[7]});
+                        symbols.push({symbolId: 16, ticks: json[16]});
+                        symbols.push({symbolId: 17, ticks: json[17]});
+                        
+                        context.symbols[0].price_series_data = turnToArray(json[1]);
+                        context.symbols[1].price_series_data = turnToArray(json[3]);
+                        context.symbols[2].price_series_data = turnToArray(json[5]);
+                        context.symbols[3].price_series_data = turnToArray(json[7]);
+                        context.symbols[4].price_series_data = turnToArray(json[16]);
+                        context.symbols[5].price_series_data = turnToArray(json[17]);
+                        context.displayCharts();
+                        context.evaluateCode();
+                    },
+                }).fail(function(xhr, status, error) {
+                    context.userWarning = "Unable to contact server.";
+                });
+            },
+            displayCharts(){
+                this.createCharts();
+                this.chart = LightweightCharts.createChart(($('#chart_area')[0]), { width: $('#chart_area')[0].parentElement.scrollWidth, height: 300, background: "gray" });
+                this.price_series = this.chart.addLineSeries();
+                this.selectSymbol(this.symbols[0]);
+            }
+        },
+    });
+</script>
